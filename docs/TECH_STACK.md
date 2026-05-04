@@ -15,6 +15,7 @@
 - `uuid` for audit identifiers.
 - `chrono` for time handling.
 - `tokio-postgres` for optional PostgreSQL audit storage.
+- In-memory manual review records plus append-only audit events for the optional human approval gate.
 
 ## Project Layout
 

@@ -28,11 +28,21 @@ Response:
   "external_view": {},
   "privacy_report": {},
   "utility_report": {},
-  "audit_summary": {}
+  "audit_summary": {},
+  "manual_review": {
+    "required": true,
+    "audit_id": "00000000-0000-0000-0000-000000000000",
+    "external_view_digest": "sha256:...",
+    "status": "pending",
+    "reviewer": null,
+    "reason": "manual review required before external dispatch"
+  }
 }
 ```
 
 Local token mappings are never returned. They are written to the local JSONL file configured by `PROOFGATE_MAPPING_LOG`. Audit summaries and verification results are written to `PROOFGATE_AUDIT_LOG`.
+
+`manual_review` is returned only when `PROOFGATE_REVIEW_MODE=manual`. In that mode `audit_summary.blocked=true` until the projected view is approved. The approval is bound to `audit_id` and `external_view_digest`.
 
 ## POST /v1/statistics
 
@@ -119,6 +129,65 @@ Response:
 }
 ```
 
+## POST /v1/review/status
+
+Read the manual review state for a projected view.
+
+Request:
+
+```json
+{
+  "audit_id": "00000000-0000-0000-0000-000000000000"
+}
+```
+
+Response:
+
+```json
+{
+  "required": true,
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "external_view_digest": "sha256:...",
+  "status": "pending",
+  "reviewer": null,
+  "reason": "manual review required before external dispatch",
+  "created_at": "2026-05-04T00:00:00Z",
+  "updated_at": "2026-05-04T00:00:00Z"
+}
+```
+
+## POST /v1/review/approve
+
+Approve a projected view after human review. Approval does not expose raw mappings and does not call an external model.
+
+Request:
+
+```json
+{
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "reviewer": "reviewer-id",
+  "reason": "projected view inspected and approved"
+}
+```
+
+Response: same shape as `/v1/review/status`, with `status="approved"`.
+
+## POST /v1/review/reject
+
+Reject a projected view. A rejected view cannot pass `/v1/model-dispatch` while manual review mode is enabled.
+
+Request:
+
+```json
+{
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "reviewer": "reviewer-id",
+  "reason": "projection contains unsafe context"
+}
+```
+
+Response: same shape as `/v1/review/status`, with `status="rejected"`.
+
 ## POST /v1/rag/project-chunks
 
 Project RAG chunks before indexing or before external-context use.
@@ -150,7 +219,13 @@ Response:
       "audit_id": "00000000-0000-0000-0000-000000000000",
       "external_view": {},
       "privacy_passed": true,
-      "utility_passed": true
+      "utility_passed": true,
+      "manual_review": {
+        "required": true,
+        "audit_id": "00000000-0000-0000-0000-000000000000",
+        "external_view_digest": "sha256:...",
+        "status": "pending"
+      }
     }
   ]
 }
@@ -200,6 +275,7 @@ Request:
 {
   "provider": "reserved",
   "task_profile": "contract_risk_review",
+  "audit_id": "00000000-0000-0000-0000-000000000000",
   "external_view": {
     "content_type": "json",
     "payload": {}
@@ -214,6 +290,11 @@ Response:
   "provider": "reserved",
   "dispatched": false,
   "status": "external model adapter is reserved but not configured for task_profile=contract_risk_review",
-  "output": null
+  "output": null,
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "external_view_digest": "sha256:...",
+  "blocked_by_review": false
 }
 ```
+
+When `PROOFGATE_REVIEW_MODE=manual`, `/v1/model-dispatch` requires an approved review record for the supplied `audit_id`. It recomputes the digest of the supplied `external_view` and blocks dispatch if the digest differs from the reviewed digest.

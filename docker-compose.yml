@@ -9,6 +9,7 @@ services:
       PROOFGATE_MAPPING_LOG: /app/data/local-mappings.jsonl
       PROOFGATE_AUDIT_LOG: /app/data/audit.jsonl
       PROOFGATE_AUDIT_POSTGRES_URL: ${PROOFGATE_AUDIT_POSTGRES_URL:-}
+      PROOFGATE_REVIEW_MODE: ${PROOFGATE_REVIEW_MODE:-off}
       PROOFGATE_HMAC_KEY: ${PROOFGATE_HMAC_KEY:?set local secret}
       CARGO_HOME: /workspace/.cargo-home
       CARGO_TARGET_DIR: /workspace/target

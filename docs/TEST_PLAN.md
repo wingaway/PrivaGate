@@ -76,6 +76,33 @@ curl -sS http://127.0.0.1:8080/v1/restore-output \
 
 Expected result: authorized tokens are restored locally. Restoration must not call an external model.
 
+## Manual Review Gate
+
+Start the gateway with manual review enabled:
+
+```bash
+export PROOFGATE_REVIEW_MODE=manual
+./scripts/cargo.sh run -p proofgate-gateway
+```
+
+Project a synthetic request. Expected result:
+
+- `audit_summary.blocked=true`;
+- `manual_review.status="pending"`;
+- `manual_review.external_view_digest` equals `audit_summary.external_view_digest`.
+
+Before approval, `/v1/model-dispatch` with the same `audit_id` must return `dispatched=false` and `blocked_by_review=true`.
+
+Approve the projection:
+
+```bash
+curl -sS http://127.0.0.1:8080/v1/review/approve \
+  -H 'Content-Type: application/json' \
+  -d '{"audit_id":"<audit-id>","reviewer":"reviewer-id","reason":"synthetic projected view approved"}'
+```
+
+Expected result: `/v1/model-dispatch` is no longer blocked by the manual review gate when the dispatch request carries the same `audit_id` and unchanged `external_view` digest. A modified external view must still be blocked by digest mismatch.
+
 ## Differential Privacy Statistics
 
 Call `/v1/statistics` with synthetic structured data. Expected result:

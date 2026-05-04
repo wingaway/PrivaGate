@@ -30,8 +30,13 @@ $env:PROOFGATE_HMAC_KEY="replace-with-local-secret"
 Optional:
 
 - `PROOFGATE_AUDIT_POSTGRES_URL`: PostgreSQL audit backend.
+- `PROOFGATE_REVIEW_MODE`: `off` by default; set to `manual` to require human approval before model dispatch.
 - `RUST_LOG`: tracing filter.
 - `PROOFGATE_URL`: simulation gateway URL.
+
+## Manual Review Runtime
+
+With `PROOFGATE_REVIEW_MODE=manual`, every projection creates a pending review record inside the local gateway process. External dispatch through `/v1/model-dispatch` is blocked until `/v1/review/approve` approves the same `audit_id` and digest.
 
 ## Model Runtime Assumption
 

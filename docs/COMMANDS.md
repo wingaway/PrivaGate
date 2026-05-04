@@ -28,6 +28,7 @@ The scripts configure:
 - `PROOFGATE_POLICY_PATH`
 - `PROOFGATE_MAPPING_LOG`
 - `PROOFGATE_AUDIT_LOG`
+- `PROOFGATE_REVIEW_MODE`
 
 ## Cargo Wrapper
 
@@ -79,6 +80,30 @@ Invoke-RestMethod `
   -Uri http://127.0.0.1:8080/v1/project `
   -ContentType "application/json" `
   -InFile .\examples\project-request.json
+```
+
+## Manual Review Mode
+
+Enable the review gate:
+
+```bash
+export PROOFGATE_REVIEW_MODE=manual
+./scripts/cargo.sh run -p proofgate-gateway
+```
+
+Approve a projected view after inspecting `external_view`, `privacy_report`, and `utility_report`:
+
+```bash
+curl -sS http://127.0.0.1:8080/v1/review/approve \
+  -H 'Content-Type: application/json' \
+  -d '{"audit_id":"<audit-id>","reviewer":"reviewer-id","reason":"projected view approved"}'
+```
+
+PowerShell:
+
+```powershell
+$env:PROOFGATE_REVIEW_MODE="manual"
+.\scripts\cargo.ps1 run -p proofgate-gateway
 ```
 
 ## External API Simulation

@@ -23,6 +23,7 @@ business input
   -> ProofGate policy engine
   -> tokenization / generalization / suppression / DP statistics
   -> external-visible view
+  -> optional human review gate
   -> external LLM API
   -> output inspection
   -> optional local restoration
@@ -55,6 +56,14 @@ abs(M(D) - f(D)) <= ln(1 / beta) / epsilon
 
 This makes statistical utility auditable.
 
+For workflows that require human approval before external use, ProofGate can bind a review decision to the projected view:
+
+```text
+approved(audit_id, external_view_digest) = true
+```
+
+At dispatch time, the gateway recomputes the digest and permits dispatch only when the digest equals the approved digest for the same `audit_id`.
+
 ## Utility Model
 
 For complex data, utility is not raw text preservation. ProofGate uses structural fidelity:
@@ -74,6 +83,7 @@ Each projection produces:
 - `privacy_report`: mechanisms, verification results, privacy budget, leakage notes, and residual risks.
 - `utility_report`: required field checks, structural constraints, and task-preservation checks.
 - `audit_summary`: stable digests and replay identifiers.
+- `manual_review`: optional pending, approved, or rejected review state bound to the external-view digest.
 
 These reports are not external endorsement. They are reproducible records of mechanisms, parameters, constraints, and verification outcomes.
 

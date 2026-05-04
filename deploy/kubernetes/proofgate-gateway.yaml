@@ -70,6 +70,8 @@ spec:
               value: /app/data/local-mappings.jsonl
             - name: PROOFGATE_AUDIT_LOG
               value: /app/data/audit.jsonl
+            - name: PROOFGATE_REVIEW_MODE
+              value: off
             - name: PROOFGATE_HMAC_KEY
               valueFrom:
                 secretKeyRef:
@@ -109,4 +111,3 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-

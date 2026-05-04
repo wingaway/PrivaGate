@@ -26,6 +26,7 @@ Required coverage:
 - Output inspection pass rate.
 - Differential-privacy budget and error bounds.
 - Known residual leakage such as equality and frequency leakage.
+- Manual review gate pass/block behavior when enabled.
 
 ## Utility Metrics
 
@@ -47,6 +48,7 @@ Complex datasets must verify:
 - bounded numeric transformations;
 - no raw identifiers in derived fields;
 - no prompt or tool output bypass.
+- manual approval must be bound to the same `audit_id` and `external_view_digest` that reaches dispatch.
 
 ## Quality Gates
 

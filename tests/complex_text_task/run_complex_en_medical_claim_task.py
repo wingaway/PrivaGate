@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "tests" / "external_api_simulation"))
 
 from run_external_api_simulation import (  # noqa: E402
     DEFAULT_GATEWAY,
+    approve_manual_review_if_needed,
     chat_completion,
     chat_completion_request,
     inspect_output,
@@ -100,6 +101,8 @@ def write_markdown(path, result):
     lines = [
         f"# Complex Text Task Report: {CASE_ID}",
         "",
+        "> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, medical facts, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating ProofGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.",
+        "",
         "## Test Task",
         "",
         f"- Case ID: `{CASE_ID}`",
@@ -153,6 +156,10 @@ def write_markdown(path, result):
             "### Utility Report",
             "",
             fenced_json(result["projection"]["utility_report"]),
+            "",
+            "### Manual Review Gate",
+            "",
+            fenced_json(result["manual_review"]),
             "",
             "## External Model Input",
             "",
@@ -224,6 +231,11 @@ def main():
         projection = project(args.gateway_url, case_input)
         audit_id = projection["audit_summary"]["audit_id"]
         external_view = projection["external_view"]
+        manual_review = approve_manual_review_if_needed(
+            args.gateway_url,
+            projection,
+            reason="synthetic English complex text task reviewed before external dispatch",
+        )
 
         external_view_text = json.dumps(external_view, ensure_ascii=False)
         external_view_sensitive_leaks = contains_any(external_view_text, EXPECTED_SENSITIVE_VALUES)
@@ -294,6 +306,7 @@ def main():
             "input_digest": projection["audit_summary"]["input_digest"],
             "external_view_digest": projection["audit_summary"]["external_view_digest"],
             "projection": projection,
+            "manual_review": manual_review,
             "privacy_passed": privacy_passed,
             "external_view_sensitive_leaks": external_view_sensitive_leaks,
             "external_model": {

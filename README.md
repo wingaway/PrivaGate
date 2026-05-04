@@ -21,6 +21,7 @@ These goals are not unconditional. ProofGate treats each request as a privacy-ut
 raw input
   -> local auxiliary model or local detectors
   -> ProofGate projection
+  -> optional manual review gate
   -> external-visible view + proof reports
   -> external LLM API
   -> output inspection
@@ -101,6 +102,10 @@ To record full model input/output for a synthetic run:
 ```
 
 Generated data artifacts are ignored by default. Only selected synthetic Markdown reports under `data/complex-text-task-results/*.md` may be published when they carry a public test-data notice. JSON reports, model traces, audit logs, mapping logs, and credentials must stay local.
+
+## Manual Review Mode
+
+Set `PROOFGATE_REVIEW_MODE=manual` when projected data must be approved by a human before external dispatch. In this mode `/v1/project` returns `manual_review.status="pending"` and `audit_summary.blocked=true`; `/v1/model-dispatch` blocks until `/v1/review/approve` approves the same `audit_id` and `external_view_digest`.
 
 ## Documentation
 

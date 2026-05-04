@@ -7,6 +7,7 @@ Linux:
 ```bash
 source ./scripts/dev-env.sh
 export PROOFGATE_HMAC_KEY="replace-with-deployment-secret"
+export PROOFGATE_REVIEW_MODE="manual"
 docker compose config
 docker compose up --build
 ```
@@ -16,6 +17,7 @@ Windows:
 ```powershell
 .\scripts\dev-env.ps1
 $env:PROOFGATE_HMAC_KEY="replace-with-deployment-secret"
+$env:PROOFGATE_REVIEW_MODE="manual"
 docker compose config
 docker compose up --build
 ```
@@ -37,7 +39,10 @@ Before use, replace secrets, storage settings, image names, and ingress rules wi
 - Local HMAC key.
 - Protected local mapping storage.
 - Append-only audit storage.
+- Optional manual review gate with `PROOFGATE_REVIEW_MODE=manual`.
 
 ## Deployment Rule
 
 External model integrations must receive only `external_view`. Raw input, local mappings, and keys must remain inside the local trust boundary.
+
+For deployments that include an external model adapter, enable manual review mode when policy requires human approval before dispatch. The approval record is bound to `audit_id` and `external_view_digest`.

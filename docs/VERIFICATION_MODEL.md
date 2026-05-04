@@ -49,6 +49,23 @@ external_view_digest = sha256(canonical_external_view)
 
 Digest binding allows later replay and comparison without publishing raw data.
 
+## Manual Review Gate
+
+When `PROOFGATE_REVIEW_MODE=manual`, a human approval is also bound to:
+
+```text
+review_binding = (audit_id, external_view_digest, status)
+```
+
+The gateway recomputes `external_view_digest` at dispatch time. Dispatch is allowed only when:
+
+```text
+status(audit_id) = approved
+and digest(dispatch.external_view) = reviewed_external_view_digest(audit_id)
+```
+
+This does not prove that a reviewer made a correct judgment; it proves that the external dispatch corresponds exactly to the projected view that was approved.
+
 ## Structural Fidelity
 
 For relations:

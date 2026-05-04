@@ -1,10 +1,12 @@
 use proofgate_core::ExternalView;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ModelDispatchRequest {
     pub provider: String,
     pub task_profile: String,
+    pub audit_id: Option<Uuid>,
     pub external_view: ExternalView,
 }
 
@@ -14,6 +16,9 @@ pub struct ModelDispatchResponse {
     pub dispatched: bool,
     pub status: String,
     pub output: Option<String>,
+    pub audit_id: Option<Uuid>,
+    pub external_view_digest: Option<String>,
+    pub blocked_by_review: bool,
 }
 
 pub trait ModelAdapter: Send + Sync {
@@ -34,6 +39,9 @@ impl ModelAdapter for DisabledModelAdapter {
                 request.task_profile
             ),
             output: None,
+            audit_id: request.audit_id,
+            external_view_digest: None,
+            blocked_by_review: false,
         }
     }
 }

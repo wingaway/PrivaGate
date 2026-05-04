@@ -8,10 +8,12 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use chrono::{DateTime, Utc};
 use proofgate_core::{
     compute_statistics, process_document, GatewayInput, GatewayOutput, Policy, StatisticOutput,
 };
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::{
     env, fs,
     fs::OpenOptions,
@@ -43,6 +45,8 @@ struct AppState {
     mapping_log: Arc<Mutex<MappingLog>>,
     audit_sink: Arc<Mutex<AuditSink>>,
     model_adapter: Arc<dyn ModelAdapter>,
+    review_mode: ReviewMode,
+    review_records: Arc<Mutex<BTreeMap<Uuid, ReviewRecord>>>,
 }
 
 struct MappingLog {
@@ -52,6 +56,31 @@ struct MappingLog {
 enum AuditSink {
     Jsonl { path: PathBuf },
     Postgres { connection_string: String },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ReviewMode {
+    Off,
+    Manual,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum ReviewStatus {
+    Pending,
+    Approved,
+    Rejected,
+}
+
+#[derive(Debug, Clone)]
+struct ReviewRecord {
+    audit_id: Uuid,
+    external_view_digest: String,
+    status: ReviewStatus,
+    reviewer: Option<String>,
+    reason: Option<String>,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
 }
 
 #[tokio::main]
@@ -70,6 +99,9 @@ async fn main() -> Result<()> {
         .route("/v1/session/risk", post(session_risk))
         .route("/v1/inspect-output", post(inspect_output))
         .route("/v1/restore-output", post(restore_output))
+        .route("/v1/review/status", post(review_status))
+        .route("/v1/review/approve", post(review_approve))
+        .route("/v1/review/reject", post(review_reject))
         .route("/v1/model-dispatch", post(model_dispatch))
         .layer(TraceLayer::new_for_http())
         .with_state(state);
@@ -92,9 +124,13 @@ async fn project_rag_chunks(
             content_type: chunk.content_type,
             payload: chunk.payload,
         };
-        let output = process_document(gateway_input, &state.policy, &state.hmac_key)?;
+        let mut output = process_document(gateway_input, &state.policy, &state.hmac_key)?;
+        let manual_review = create_manual_review_if_required(&state, &mut output)?;
         persist_local_mappings(&state, &output)?;
         persist_audit_summary(&state, &output).await?;
+        if let Some(review) = &manual_review {
+            persist_review_event(&state, "pending", review).await?;
+        }
         chunks.push(RagChunkProjection {
             chunk_id: chunk.chunk_id,
             source_uri: chunk.source_uri,
@@ -111,6 +147,7 @@ async fn project_rag_chunks(
                 .constraint_results
                 .iter()
                 .all(|result| result.passed),
+            manual_review,
         });
     }
 
@@ -209,6 +246,9 @@ fn load_state() -> Result<AppState> {
         .with_context(|| format!("failed to read policy file: {policy_path}"))?;
     let policy: Policy = serde_json::from_str(&policy_json)
         .with_context(|| format!("failed to parse policy file: {policy_path}"))?;
+    let review_mode = parse_review_mode(
+        &env::var("PROOFGATE_REVIEW_MODE").unwrap_or_else(|_| "off".to_string()),
+    )?;
 
     Ok(AppState {
         policy: Arc::new(policy),
@@ -218,6 +258,8 @@ fn load_state() -> Result<AppState> {
         })),
         audit_sink: Arc::new(Mutex::new(audit_sink)),
         model_adapter: Arc::new(DisabledModelAdapter),
+        review_mode,
+        review_records: Arc::new(Mutex::new(BTreeMap::new())),
     })
 }
 
@@ -231,11 +273,18 @@ async fn healthz() -> Json<Health> {
 async fn project(
     State(state): State<AppState>,
     Json(input): Json<GatewayInput>,
-) -> Result<Json<GatewayOutput>, ApiError> {
-    let output = process_document(input, &state.policy, &state.hmac_key)?;
+) -> Result<Json<ProjectResponse>, ApiError> {
+    let mut output = process_document(input, &state.policy, &state.hmac_key)?;
+    let manual_review = create_manual_review_if_required(&state, &mut output)?;
     persist_local_mappings(&state, &output)?;
     persist_audit_summary(&state, &output).await?;
-    Ok(Json(output))
+    if let Some(review) = &manual_review {
+        persist_review_event(&state, "pending", review).await?;
+    }
+    Ok(Json(ProjectResponse {
+        output,
+        manual_review,
+    }))
 }
 
 async fn statistics(
@@ -272,8 +321,25 @@ async fn inspect_output(
 async fn model_dispatch(
     State(state): State<AppState>,
     Json(input): Json<ModelDispatchRequest>,
-) -> Json<ModelDispatchResponse> {
-    Json(state.model_adapter.dispatch(input))
+) -> Result<Json<ModelDispatchResponse>, ApiError> {
+    let external_view_digest = proofgate_core::digest::sha256_json(&input.external_view)?;
+    if let Some(reason) =
+        review_dispatch_block_reason(&state, input.audit_id, &external_view_digest)?
+    {
+        return Ok(Json(ModelDispatchResponse {
+            provider: input.provider,
+            dispatched: false,
+            status: format!("manual review gate blocked dispatch: {reason}"),
+            output: None,
+            audit_id: input.audit_id,
+            external_view_digest: Some(external_view_digest),
+            blocked_by_review: true,
+        }));
+    }
+
+    let mut response = state.model_adapter.dispatch(input);
+    response.external_view_digest = Some(external_view_digest);
+    Ok(Json(response))
 }
 
 async fn restore_output(
@@ -295,6 +361,149 @@ async fn restore_output(
         restored_output: restored,
         replacements,
     }))
+}
+
+async fn review_status(
+    State(state): State<AppState>,
+    Json(input): Json<ReviewStatusRequest>,
+) -> Result<Json<ManualReviewState>, ApiError> {
+    Ok(Json(load_manual_review_status(&state, input.audit_id)?))
+}
+
+async fn review_approve(
+    State(state): State<AppState>,
+    Json(input): Json<ReviewDecisionRequest>,
+) -> Result<Json<ManualReviewState>, ApiError> {
+    let status = set_manual_review_decision(&state, input, ReviewStatus::Approved)?;
+    persist_review_event(&state, "approved", &status).await?;
+    Ok(Json(status))
+}
+
+async fn review_reject(
+    State(state): State<AppState>,
+    Json(input): Json<ReviewDecisionRequest>,
+) -> Result<Json<ManualReviewState>, ApiError> {
+    let status = set_manual_review_decision(&state, input, ReviewStatus::Rejected)?;
+    persist_review_event(&state, "rejected", &status).await?;
+    Ok(Json(status))
+}
+
+fn parse_review_mode(value: &str) -> Result<ReviewMode> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "" | "off" | "disabled" | "none" | "false" | "0" => Ok(ReviewMode::Off),
+        "manual" | "required" | "human" | "human_review" => Ok(ReviewMode::Manual),
+        other => Err(anyhow::anyhow!(
+            "invalid PROOFGATE_REVIEW_MODE={other}; use off or manual"
+        )),
+    }
+}
+
+fn create_manual_review_if_required(
+    state: &AppState,
+    output: &mut GatewayOutput,
+) -> Result<Option<ManualReviewState>> {
+    if state.review_mode != ReviewMode::Manual {
+        return Ok(None);
+    }
+
+    output.audit_summary.blocked = true;
+    let now = Utc::now();
+    let record = ReviewRecord {
+        audit_id: output.audit_summary.audit_id,
+        external_view_digest: output.audit_summary.external_view_digest.clone(),
+        status: ReviewStatus::Pending,
+        reviewer: None,
+        reason: Some("manual review required before external dispatch".to_string()),
+        created_at: now,
+        updated_at: now,
+    };
+    let status = ManualReviewState::from(&record);
+    let mut records = state
+        .review_records
+        .lock()
+        .map_err(|_| anyhow::anyhow!("manual review lock poisoned"))?;
+    records.insert(record.audit_id, record);
+    Ok(Some(status))
+}
+
+fn load_manual_review_status(state: &AppState, audit_id: Uuid) -> Result<ManualReviewState> {
+    let records = state
+        .review_records
+        .lock()
+        .map_err(|_| anyhow::anyhow!("manual review lock poisoned"))?;
+    let record = records
+        .get(&audit_id)
+        .ok_or_else(|| anyhow::anyhow!("manual review record not found for audit_id={audit_id}"))?;
+    Ok(ManualReviewState::from(record))
+}
+
+fn set_manual_review_decision(
+    state: &AppState,
+    input: ReviewDecisionRequest,
+    status: ReviewStatus,
+) -> Result<ManualReviewState> {
+    let reviewer = input.reviewer.trim();
+    if reviewer.is_empty() {
+        return Err(anyhow::anyhow!("reviewer must not be empty"));
+    }
+
+    let mut records = state
+        .review_records
+        .lock()
+        .map_err(|_| anyhow::anyhow!("manual review lock poisoned"))?;
+    let record = records.get_mut(&input.audit_id).ok_or_else(|| {
+        anyhow::anyhow!(
+            "manual review record not found for audit_id={}",
+            input.audit_id
+        )
+    })?;
+    record.status = status;
+    record.reviewer = Some(reviewer.to_string());
+    record.reason = input.reason.filter(|reason| !reason.trim().is_empty());
+    record.updated_at = Utc::now();
+    Ok(ManualReviewState::from(&*record))
+}
+
+fn review_dispatch_block_reason(
+    state: &AppState,
+    audit_id: Option<Uuid>,
+    external_view_digest: &str,
+) -> Result<Option<String>> {
+    if state.review_mode != ReviewMode::Manual {
+        return Ok(None);
+    }
+
+    let Some(audit_id) = audit_id else {
+        return Ok(Some(
+            "missing audit_id for manually reviewed projection".to_string(),
+        ));
+    };
+
+    let records = state
+        .review_records
+        .lock()
+        .map_err(|_| anyhow::anyhow!("manual review lock poisoned"))?;
+    let Some(record) = records.get(&audit_id) else {
+        return Ok(Some(format!(
+            "no manual review record for audit_id={audit_id}"
+        )));
+    };
+
+    if record.external_view_digest != external_view_digest {
+        return Ok(Some(format!(
+            "external_view_digest mismatch for audit_id={audit_id}"
+        )));
+    }
+
+    match record.status {
+        ReviewStatus::Approved => Ok(None),
+        ReviewStatus::Pending => Ok(Some(format!(
+            "audit_id={audit_id} is pending manual review"
+        ))),
+        ReviewStatus::Rejected => Ok(Some(format!(
+            "audit_id={audit_id} was rejected by manual review"
+        ))),
+    }
 }
 
 fn persist_local_mappings(state: &AppState, output: &GatewayOutput) -> Result<()> {
@@ -348,6 +557,19 @@ async fn persist_statistic_audit(state: &AppState, output: &StatisticOutput) -> 
         "privacy_budget": &output.privacy_budget,
         "results": &output.results,
         "verification_results": &output.verification_results,
+    });
+    persist_audit_row(state, &row).await
+}
+
+async fn persist_review_event(
+    state: &AppState,
+    event: &str,
+    review: &ManualReviewState,
+) -> Result<()> {
+    let row = serde_json::json!({
+        "report_type": "manual_review_gate",
+        "event": event,
+        "manual_review": review,
     });
     persist_audit_row(state, &row).await
 }
@@ -437,6 +659,64 @@ struct Health {
     service: &'static str,
 }
 
+#[derive(Serialize)]
+struct ProjectResponse {
+    #[serde(flatten)]
+    output: GatewayOutput,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    manual_review: Option<ManualReviewState>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct ManualReviewState {
+    required: bool,
+    audit_id: Uuid,
+    external_view_digest: String,
+    status: ReviewStatus,
+    reviewer: Option<String>,
+    reason: Option<String>,
+    created_at: DateTime<Utc>,
+    updated_at: DateTime<Utc>,
+}
+
+impl From<&ReviewRecord> for ManualReviewState {
+    fn from(record: &ReviewRecord) -> Self {
+        Self {
+            required: true,
+            audit_id: record.audit_id,
+            external_view_digest: record.external_view_digest.clone(),
+            status: record.status.clone(),
+            reviewer: record.reviewer.clone(),
+            reason: record.reason.clone(),
+            created_at: record.created_at,
+            updated_at: record.updated_at,
+        }
+    }
+}
+
+impl std::fmt::Display for ReviewStatus {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let status = match self {
+            ReviewStatus::Pending => "pending",
+            ReviewStatus::Approved => "approved",
+            ReviewStatus::Rejected => "rejected",
+        };
+        formatter.write_str(status)
+    }
+}
+
+#[derive(Deserialize)]
+struct ReviewStatusRequest {
+    audit_id: Uuid,
+}
+
+#[derive(Deserialize)]
+struct ReviewDecisionRequest {
+    audit_id: Uuid,
+    reviewer: String,
+    reason: Option<String>,
+}
+
 #[derive(Deserialize)]
 struct OutputInspectionRequest {
     audit_id: Uuid,
@@ -483,6 +763,8 @@ struct RagChunkProjection {
     external_view: proofgate_core::ExternalView,
     privacy_passed: bool,
     utility_passed: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    manual_review: Option<ManualReviewState>,
 }
 
 #[derive(Deserialize)]
@@ -576,5 +858,86 @@ impl IntoResponse for ApiError {
             "message": self.0.to_string()
         });
         (StatusCode::BAD_REQUEST, Json(body)).into_response()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use proofgate_core::policy::ConstraintPolicy;
+
+    fn test_state(review_mode: ReviewMode) -> AppState {
+        AppState {
+            policy: Arc::new(Policy {
+                policy_version: "test".to_string(),
+                task_profile: "manual_review_test".to_string(),
+                key_domain: "local/test".to_string(),
+                fields: BTreeMap::new(),
+                constraints: ConstraintPolicy::default(),
+                statistics: Vec::new(),
+            }),
+            hmac_key: Arc::new(b"test-secret".to_vec()),
+            mapping_log: Arc::new(Mutex::new(MappingLog {
+                path: PathBuf::from("target/test-mappings.jsonl"),
+            })),
+            audit_sink: Arc::new(Mutex::new(AuditSink::Jsonl {
+                path: PathBuf::from("target/test-audit.jsonl"),
+            })),
+            model_adapter: Arc::new(DisabledModelAdapter),
+            review_mode,
+            review_records: Arc::new(Mutex::new(BTreeMap::new())),
+        }
+    }
+
+    #[test]
+    fn parses_manual_review_mode() {
+        assert_eq!(parse_review_mode("off").unwrap(), ReviewMode::Off);
+        assert_eq!(parse_review_mode("manual").unwrap(), ReviewMode::Manual);
+        assert!(parse_review_mode("maybe").is_err());
+    }
+
+    #[test]
+    fn manual_review_blocks_until_approved_for_same_digest() {
+        let state = test_state(ReviewMode::Manual);
+        let input = GatewayInput {
+            content_type: proofgate_core::transform::ContentType::Text,
+            payload: serde_json::json!("synthetic public text"),
+        };
+        let mut output = process_document(input, &state.policy, state.hmac_key.as_ref()).unwrap();
+        let digest = output.audit_summary.external_view_digest.clone();
+
+        let review = create_manual_review_if_required(&state, &mut output)
+            .unwrap()
+            .unwrap();
+        assert!(output.audit_summary.blocked);
+
+        let pending_reason =
+            review_dispatch_block_reason(&state, Some(review.audit_id), &digest).unwrap();
+        assert!(pending_reason
+            .expect("pending review should block")
+            .contains("pending manual review"));
+
+        set_manual_review_decision(
+            &state,
+            ReviewDecisionRequest {
+                audit_id: review.audit_id,
+                reviewer: "unit-test-reviewer".to_string(),
+                reason: Some("approved synthetic projection".to_string()),
+            },
+            ReviewStatus::Approved,
+        )
+        .unwrap();
+
+        assert!(
+            review_dispatch_block_reason(&state, Some(review.audit_id), &digest)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            review_dispatch_block_reason(&state, Some(review.audit_id), "sha256:changed")
+                .unwrap()
+                .expect("digest mismatch should block")
+                .contains("mismatch")
+        );
     }
 }

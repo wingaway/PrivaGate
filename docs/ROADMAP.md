@@ -8,6 +8,7 @@
 - Chinese and English detector coverage for common synthetic identifiers.
 - Privacy and utility reports.
 - Output inspection and local token restoration.
+- Optional manual review gate before model dispatch.
 - Differential-privacy helpers for selected statistics.
 - Synthetic external API simulation with local-model and external-model roles.
 - Docker Compose and Kubernetes examples.
@@ -19,6 +20,7 @@
 - Add configurable date, location, and numeric generalization policies.
 - Add relation-preservation metrics for nested JSON and RAG chunks.
 - Add dry-run local model adapters for Ollama and vLLM.
+- Persist manual review records beyond single-process memory for clustered deployments.
 - Expand multilingual synthetic benchmarks.
 - Add release scripts and benchmark summaries.
 

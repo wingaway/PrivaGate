@@ -144,6 +144,28 @@ def project(gateway_url, case_input):
     return http_json("POST", gateway_url.rstrip() + "/v1/project", case_input)
 
 
+def approve_manual_review_if_needed(
+    gateway_url,
+    projection,
+    reviewer="synthetic-test-reviewer",
+    reason="synthetic external API simulation reviewed before external dispatch",
+):
+    review = projection.get("manual_review")
+    if not review or not review.get("required"):
+        return review
+    if review.get("status") == "approved":
+        return review
+    return http_json(
+        "POST",
+        gateway_url.rstrip() + "/v1/review/approve",
+        {
+            "audit_id": projection["audit_summary"]["audit_id"],
+            "reviewer": reviewer,
+            "reason": reason,
+        },
+    )
+
+
 def inspect_output(gateway_url, audit_id, output):
     return http_json(
         "POST",
@@ -210,6 +232,7 @@ def run_case(args, case):
     projection = project(args.gateway_url, case["input"])
     audit_id = projection["audit_summary"]["audit_id"]
     external_view = projection["external_view"]
+    manual_review = approve_manual_review_if_needed(args.gateway_url, projection)
 
     external_prompt = [
         {
@@ -259,6 +282,7 @@ def run_case(args, case):
         "audit_id": audit_id,
         "input_digest": projection["audit_summary"]["input_digest"],
         "external_view_digest": projection["audit_summary"]["external_view_digest"],
+        "manual_review": manual_review,
         "local_model": {
             "model": args.local_model,
             "output": local_output,
@@ -299,6 +323,7 @@ def run_case(args, case):
             "desensitization_gateway": {
                 "request": case["input"],
                 "response": projection,
+                "manual_review": manual_review,
                 "external_view": external_view,
             },
             "external_model": {
@@ -347,16 +372,19 @@ def write_markdown(path, report):
         "",
         "## 用例结果",
         "",
-        "| case_id | passed | privacy | utility_constraints | output_inspection | utility_score | external_leaks |",
-        "|---|---:|---:|---:|---:|---:|---:|",
+        "| case_id | passed | privacy | utility_constraints | manual_review | output_inspection | utility_score | external_leaks |",
+        "|---|---:|---:|---:|---|---:|---:|---:|",
     ]
     for case in report["cases"]:
+        review = case.get("manual_review")
+        review_status = "not_required" if not review else review.get("status", "unknown")
         lines.append(
-            "| {case_id} | {passed} | {privacy} | {constraints} | {inspection} | {score:.2f} | {leaks} |".format(
+            "| {case_id} | {passed} | {privacy} | {constraints} | {review} | {inspection} | {score:.2f} | {leaks} |".format(
                 case_id=case["case_id"],
                 passed=str(case["passed"]).lower(),
                 privacy=str(case["gateway"]["privacy_passed"]).lower(),
                 constraints=str(case["gateway"]["utility_constraints_passed"]).lower(),
+                review=review_status,
                 inspection=str(case["gateway"]["output_inspection_passed"]).lower(),
                 score=case["external_model"]["utility_score"],
                 leaks=case["external_model"]["sensitive_echo_count"],

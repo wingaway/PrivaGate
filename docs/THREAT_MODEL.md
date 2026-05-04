@@ -11,6 +11,7 @@ Protected assets:
 - production policy files;
 - local model prompts and outputs containing raw data;
 - credentials for external APIs and storage systems.
+- manual review decisions and reviewer metadata.
 
 ## Default Attacker
 
@@ -32,6 +33,7 @@ Untrusted or less-trusted components:
 - external logs and caches;
 - external model outputs;
 - downstream tools that have not passed inspection.
+- reviewers outside the local trust boundary.
 
 ## In-Scope Risks
 
@@ -42,6 +44,8 @@ Untrusted or less-trusted components:
 - Tool output reintroducing sensitive values.
 - RAG chunk projection failures.
 - Policy misconfiguration.
+- Dispatching a projected view before required human review.
+- Dispatching a different projected view than the one that was reviewed.
 
 ## Out-of-Scope Risks
 
@@ -54,3 +58,5 @@ Untrusted or less-trusted components:
 ## Required Assumption
 
 ProofGate's privacy claims apply only when raw data, keys, mapping logs, and restoration remain inside the local trust boundary.
+
+Manual review claims apply only when external dispatch goes through ProofGate's model adapter boundary or an equivalent integration that checks the approved `audit_id` and `external_view_digest`.

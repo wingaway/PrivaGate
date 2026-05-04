@@ -78,17 +78,20 @@ Optional full synthetic model I/O trace:
 
 The script builds and starts `proofgate-gateway` automatically when the gateway is not already healthy.
 
+When `PROOFGATE_REVIEW_MODE=manual`, the runner calls `/v1/review/approve` after projection and before the external-model request. The approval reason is synthetic-test specific and the report records the manual review state. API keys and Authorization headers are never written.
+
 ## Flow
 
 For each case:
 
 1. Send synthetic raw input to the local-model simulation API.
 2. Send the same synthetic input to `/v1/project`.
-3. Send only `external_view` to the external-model simulation API.
-4. Call `/v1/inspect-output` on the external model output.
-5. Call `/v1/restore-output` to verify the local restoration path.
-6. Compute privacy, utility, and gateway report metrics.
-7. Write JSON and Markdown reports.
+3. If manual review mode is enabled, approve the projected `external_view` through `/v1/review/approve`.
+4. Send only `external_view` to the external-model simulation API.
+5. Call `/v1/inspect-output` on the external model output.
+6. Call `/v1/restore-output` to verify the local restoration path.
+7. Compute privacy, utility, review-gate, and gateway report metrics.
+8. Write JSON and Markdown reports.
 
 ## Output
 

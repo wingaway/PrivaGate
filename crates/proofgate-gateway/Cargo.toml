@@ -10,6 +10,7 @@ categories.workspace = true
 [dependencies]
 anyhow.workspace = true
 axum.workspace = true
+chrono.workspace = true
 proofgate-core = { path = "../proofgate-core" }
 serde.workspace = true
 serde_json.workspace = true
