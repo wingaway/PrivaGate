@@ -13,7 +13,7 @@ use chrono::{DateTime, Utc};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -389,58 +389,146 @@ fn number_bucket(value: &Value, bucket_size: f64) -> String {
 fn transform_text(text: &str, policy: &Policy, key: &[u8], state: &mut TransformState) -> String {
     let mut output = text.to_string();
     for (field_name, field_policy) in &policy.fields {
-        if !matches!(field_policy.mechanism, Mechanism::HmacToken) {
+        let detected_values = detected_values_for(&field_policy.field_type, &output);
+        if detected_values.is_empty() {
             continue;
         }
-        if let Some(regex) = detector_for(&field_policy.field_type) {
-            let mut replacements = Vec::new();
-            for found in regex.find_iter(&output) {
-                let raw = found.as_str().to_string();
-                let token = hmac_token(key, &field_policy.field_type, &raw);
-                replacements.push((raw, token));
+        for raw in detected_values {
+            if !output.contains(&raw) {
+                continue;
             }
-            for (raw, token) in replacements {
-                state.original_direct_identifiers.push(raw.clone());
-                state.token_by_original.insert(raw.clone(), token.clone());
-                state.local_mappings.push(LocalMappingEntry {
-                    field_name: field_name.clone(),
-                    field_type: field_policy.field_type.clone(),
-                    token: token.clone(),
-                    original_value: raw.clone(),
-                });
-                state.mechanism_evidence.push(MechanismEvidence {
-                    field_name: field_name.clone(),
-                    field_type: field_policy.field_type.clone(),
-                    mechanism: "hmac_token".to_string(),
-                    key_domain: Some(policy.key_domain.clone()),
-                    token_count: 1,
-                });
-                output = output.replace(&raw, &token);
+            state.original_direct_identifiers.push(raw.clone());
+            match field_policy.mechanism {
+                Mechanism::HmacToken => {
+                    let token = hmac_token(key, &field_policy.field_type, &raw);
+                    state.token_by_original.insert(raw.clone(), token.clone());
+                    state.local_mappings.push(LocalMappingEntry {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        token: token.clone(),
+                        original_value: raw.clone(),
+                    });
+                    state.mechanism_evidence.push(MechanismEvidence {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        mechanism: "hmac_token".to_string(),
+                        key_domain: Some(policy.key_domain.clone()),
+                        token_count: 1,
+                    });
+                    output = output.replace(&raw, &token);
+                }
+                Mechanism::AddressGeneralize => {
+                    let generalized = generalize_address(&raw, field_policy.address_level.as_ref());
+                    state.mechanism_evidence.push(MechanismEvidence {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        mechanism: "address_generalize".to_string(),
+                        key_domain: None,
+                        token_count: 1,
+                    });
+                    output = output.replace(&raw, &generalized);
+                }
+                Mechanism::Suppress => {
+                    state.mechanism_evidence.push(MechanismEvidence {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        mechanism: "suppress".to_string(),
+                        key_domain: None,
+                        token_count: 1,
+                    });
+                    output = output.replace(&raw, "[SUPPRESSED]");
+                }
+                Mechanism::Passthrough | Mechanism::RelativeTime | Mechanism::NumberBucket => {}
             }
         }
     }
     output
 }
 
-fn detector_for(field_type: &str) -> Option<Regex> {
+fn detected_values_for(field_type: &str, text: &str) -> Vec<String> {
+    let mut values = BTreeSet::new();
+    for regex in detectors_for(field_type) {
+        for captures in regex.captures_iter(text) {
+            let value = captures
+                .get(1)
+                .or_else(|| captures.get(0))
+                .map(|matched| matched.as_str().trim_matches(['"', '“', '”']));
+            if let Some(value) = value {
+                if !value.is_empty() && !should_skip_detected_value(field_type, value) {
+                    values.insert(value.to_string());
+                }
+            }
+        }
+    }
+    values.into_iter().collect()
+}
+
+fn should_skip_detected_value(field_type: &str, value: &str) -> bool {
+    (matches!(field_type, "bank_card" | "credit_card") && whole_match("national_id", value))
+        || (field_type == "registration_id" && whole_match("national_id", value))
+}
+
+fn whole_match(field_type: &str, value: &str) -> bool {
+    detector_for(field_type)
+        .and_then(|regex| regex.find(value).map(|found| found.as_str() == value))
+        .unwrap_or(false)
+}
+
+fn detectors_for(field_type: &str) -> Vec<Regex> {
+    detector_patterns_for(field_type)
+        .into_iter()
+        .filter_map(|pattern| Regex::new(pattern).ok())
+        .collect()
+}
+
+fn detector_patterns_for(field_type: &str) -> Vec<&'static str> {
     match field_type {
-        "phone" => Regex::new(
+        "person" => vec![
+            r"(?:联系人|买方联系人|担保人为|签收人记录为|签收人为)([\p{Han}]{2,4})",
+            r"(?:by|ordered by)\s+(Dr\.\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)",
+        ],
+        "organization" => vec![
+            r#"[“"]?([\p{Han}A-Za-z0-9（）()·]{2,40}(?:有限公司|集团有限公司|贸易有限公司|中心|支行))[”"]?"#,
+        ],
+        "order" => vec![r"\b((?:PO|ORD)-[A-Z0-9-]+)\b"],
+        "contract" => vec![r"\b((?:SC|K|US-K|RAG-K|STAT-K)-[A-Z0-9-]+)\b"],
+        "logistics" => vec![r"\b(LOG-[A-Z0-9-]+)\b"],
+        "invoice" => vec![r"\b(INV-[A-Z0-9-]+)\b"],
+        "license_plate" => vec![r"\b([\p{Han}][A-Z][A-Z0-9]{5})\b"],
+        "registration_id" => vec![r"\b([0-9A-Z]{18})\b"],
+        "address" => vec![
+            r"((?:[\p{Han}]{2,}省)?[\p{Han}]{2,}市[\p{Han}]{2,}(?:区|县)[\p{Han}A-Za-z0-9号路街道大道弄-]+)",
+        ],
+        "secret" => vec![r"(synthetic-[A-Za-z0-9_ ;:.-]+)"],
+        _ => detector_for(field_type)
+            .map(|_| detector_pattern_for(field_type))
+            .into_iter()
+            .flatten()
+            .collect(),
+    }
+}
+
+fn detector_pattern_for(field_type: &str) -> Option<&'static str> {
+    match field_type {
+        "phone" => Some(
             r"(?x)(?:\+?\d{1,3}[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}|1[3-9]\d[-\s]?\d{4}[-\s]?\d{4})\b",
-        )
-        .ok(),
-        "national_id" => Regex::new(
-            r"(?i)\b\d{6}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dx]\b",
-        )
-        .ok(),
-        "email" => Regex::new(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b").ok(),
-        "ssn" => Regex::new(r"\b\d{3}-\d{2}-\d{4}\b").ok(),
-        "tax_id" => Regex::new(r"\b\d{2}-\d{7}\b").ok(),
-        "national_insurance_number" => Regex::new(r"(?i)\b[A-Z]{2}\d{6}[A-Z]\b").ok(),
-        "passport_number" => Regex::new(r"(?i)\b[A-Z][0-9]{7,8}\b").ok(),
-        "bank_card" | "credit_card" => Regex::new(r"\b(?:\d[ -]?){13,19}\b").ok(),
-        "ip_address" => Regex::new(r"\b(?:\d{1,3}\.){3}\d{1,3}\b").ok(),
+        ),
+        "national_id" => {
+            Some(r"(?i)\b\d{6}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dx]\b")
+        }
+        "email" => Some(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"),
+        "ssn" => Some(r"\b\d{3}-\d{2}-\d{4}\b"),
+        "tax_id" => Some(r"\b\d{2}-\d{7}\b"),
+        "national_insurance_number" => Some(r"(?i)\b[A-Z]{2}\d{6}[A-Z]\b"),
+        "passport_number" => Some(r"(?i)\b[A-Z][0-9]{7,8}\b"),
+        "bank_card" | "credit_card" => Some(r"\b(?:\d[ -]?){13,19}\b"),
+        "ip_address" => Some(r"\b(?:\d{1,3}\.){3}\d{1,3}\b"),
         _ => None,
     }
+}
+
+fn detector_for(field_type: &str) -> Option<Regex> {
+    detector_pattern_for(field_type).and_then(|pattern| Regex::new(pattern).ok())
 }
 
 fn scalar_to_string(value: &Value) -> String {
@@ -680,6 +768,90 @@ mod tests {
         assert!(json.contains("<EMAIL_"));
         assert!(json.contains("<SSN_"));
         assert!(json.contains("<CREDIT_CARD_"));
+    }
+
+    #[test]
+    fn process_text_replaces_complex_chinese_finance_identifiers() {
+        let mut fields = BTreeMap::new();
+        for (name, field_type, mechanism) in [
+            ("company_name", "organization", Mechanism::HmacToken),
+            ("contact_name", "person", Mechanism::HmacToken),
+            ("phone", "phone", Mechanism::HmacToken),
+            ("email", "email", Mechanism::HmacToken),
+            ("id_card", "national_id", Mechanism::HmacToken),
+            ("bank_card", "bank_card", Mechanism::HmacToken),
+            (
+                "business_registration_id",
+                "registration_id",
+                Mechanism::HmacToken,
+            ),
+            ("order_id", "order", Mechanism::HmacToken),
+            ("contract_id", "contract", Mechanism::HmacToken),
+            ("logistics_id", "logistics", Mechanism::HmacToken),
+            ("invoice_id", "invoice", Mechanism::HmacToken),
+            ("license_plate", "license_plate", Mechanism::HmacToken),
+            ("address", "address", Mechanism::AddressGeneralize),
+            ("raw_secret", "secret", Mechanism::Suppress),
+        ] {
+            fields.insert(
+                name.to_string(),
+                FieldPolicy {
+                    field_type: field_type.to_string(),
+                    mechanism,
+                    preserve_equality: true,
+                    required_for_task: false,
+                    bucket_size: None,
+                    address_level: Some(AddressLevel::City),
+                },
+            );
+        }
+        let policy = Policy {
+            policy_version: "test".to_string(),
+            task_profile: "supply_chain_finance_risk_review".to_string(),
+            key_domain: "test".to_string(),
+            fields,
+            constraints: ConstraintPolicy::default(),
+            statistics: vec![],
+        };
+        let input = GatewayInput {
+            content_type: ContentType::Text,
+            payload: Value::String(
+                "借款企业“苏州星瀚精密制造有限公司”通过联系人陈启明提交申请，手机号为 139-2188-4501，邮箱为 chen.qiming.synthetic@example.test。统一社会信用代码为 91320594MA1SYNTH88，银行账号为 6222 0202 8888 9911。采购订单 PO-2026-SZ-8841 和销售合同 SC-2026-ACME-7788，买方为“杭州云岚医疗设备集团有限公司”，买方联系人李若涵，电话 137-5566-0912，收货地址为 浙江省杭州市滨江区江南大道1888号。物流单号为 LOG-7788-20260419，承运车辆车牌为 苏E7S921。发票号码 INV-2026-000918。内部系统备注显示 synthetic-internal-risk-note: invoice-before-delivery; buyer-confirmation-pending。担保人为赵明远，身份证号 320581198609097731，手机号 136-7788-2091。".to_string(),
+            ),
+        };
+
+        let output = process_document(input, &policy, b"secret").unwrap();
+        let json = serde_json::to_string(&output.external_view).unwrap();
+        for raw in [
+            "苏州星瀚精密制造有限公司",
+            "杭州云岚医疗设备集团有限公司",
+            "陈启明",
+            "李若涵",
+            "赵明远",
+            "139-2188-4501",
+            "chen.qiming.synthetic@example.test",
+            "91320594MA1SYNTH88",
+            "6222 0202 8888 9911",
+            "PO-2026-SZ-8841",
+            "SC-2026-ACME-7788",
+            "LOG-7788-20260419",
+            "苏E7S921",
+            "INV-2026-000918",
+            "320581198609097731",
+            "浙江省杭州市滨江区江南大道1888号",
+            "synthetic-internal-risk-note: invoice-before-delivery; buyer-confirmation-pending",
+        ] {
+            assert!(!json.contains(raw), "raw value remained: {raw}");
+        }
+        assert!(json.contains("<ORGANIZATION_"));
+        assert!(json.contains("<PERSON_"));
+        assert!(json.contains("<ORDER_"));
+        assert!(json.contains("<CONTRACT_"));
+        assert!(json.contains("<LOGISTICS_"));
+        assert!(json.contains("<INVOICE_"));
+        assert!(json.contains("<NATIONAL_ID_"));
+        assert!(json.contains("<BANK_CARD_"));
+        assert!(json.contains("[SUPPRESSED]"));
     }
 
     #[test]

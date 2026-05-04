@@ -87,6 +87,12 @@
       "preserve_equality": false,
       "required_for_task": false
     },
+    "business_registration_id": {
+      "field_type": "registration_id",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
     "national_insurance_number": {
       "field_type": "national_insurance_number",
       "mechanism": "hmac_token",
@@ -112,6 +118,12 @@
       "required_for_task": true
     },
     "order_id": {
+      "field_type": "order",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "purchase_order_id": {
       "field_type": "order",
       "mechanism": "hmac_token",
       "preserve_equality": true,
@@ -200,6 +212,18 @@
       "mechanism": "hmac_token",
       "preserve_equality": false,
       "required_for_task": false
+    },
+    "logistics_id": {
+      "field_type": "logistics",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "invoice_id": {
+      "field_type": "invoice",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
     },
     "company_name": {
       "field_type": "organization",
