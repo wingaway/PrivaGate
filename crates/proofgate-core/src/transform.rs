@@ -329,17 +329,17 @@ fn generalize_english_address(address: &str, level: AddressLevel) -> String {
         return address.to_string();
     }
 
-    let country = parts.last().copied().unwrap_or_default();
-    let region = strip_postal_code(
-        parts
-            .get(parts.len().saturating_sub(2))
-            .copied()
-            .unwrap_or(""),
-    );
-    let city = parts
-        .get(parts.len().saturating_sub(3))
-        .copied()
-        .unwrap_or(region.as_str());
+    let last = parts.last().copied().unwrap_or_default();
+    let has_country = parts.len() >= 4 && !last.chars().any(|ch| ch.is_ascii_digit());
+    let country = if has_country { last } else { "" };
+    let region_index = if has_country {
+        parts.len().saturating_sub(2)
+    } else {
+        parts.len().saturating_sub(1)
+    };
+    let city_index = region_index.saturating_sub(1);
+    let region = strip_postal_code(parts.get(region_index).copied().unwrap_or(""));
+    let city = parts.get(city_index).copied().unwrap_or(region.as_str());
 
     match level {
         AddressLevel::Province => {
@@ -485,21 +485,30 @@ fn detector_patterns_for(field_type: &str) -> Vec<&'static str> {
     match field_type {
         "person" => vec![
             r"(?:联系人|买方联系人|担保人为|签收人记录为|签收人为)([\p{Han}]{2,4})",
-            r"(?:by|ordered by)\s+(Dr\.\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)",
+            r"(?:by|ordered by|physician|provider)\s+(Dr\.\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)",
+            r"\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+),\s+(?:member|patient|customer)\b",
+            r"\b(?:member|patient|customer)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b",
         ],
         "organization" => vec![
             r#"[“"]?([\p{Han}A-Za-z0-9（）()·]{2,40}(?:有限公司|集团有限公司|贸易有限公司|中心|支行))[”"]?"#,
+            r"\b([A-Z][A-Za-z0-9&.'-]+(?:\s+[A-Z][A-Za-z0-9&.'-]+){0,6}\s+(?:Center|Centre|Hospital|Clinic|Group|Bank|Branch|Company|Inc|LLC|Ltd))\b",
         ],
         "order" => vec![r"\b((?:PO|ORD)-[A-Z0-9-]+)\b"],
         "contract" => vec![r"\b((?:SC|K|US-K|RAG-K|STAT-K)-[A-Z0-9-]+)\b"],
+        "claim" => vec![r"\b(CLM-[A-Z0-9-]+)\b"],
+        "policy" => vec![r"\b(POL-[A-Z0-9-]+)\b"],
+        "member" => vec![r"\b(MBR-[A-Z0-9-]+)\b"],
+        "medical_record" => vec![r"\b(MR-[A-Z0-9-]+)\b"],
         "logistics" => vec![r"\b(LOG-[A-Z0-9-]+)\b"],
         "invoice" => vec![r"\b(INV-[A-Z0-9-]+)\b"],
         "license_plate" => vec![r"\b([\p{Han}][A-Z][A-Z0-9]{5})\b"],
         "registration_id" => vec![r"\b([0-9A-Z]{18})\b"],
         "address" => vec![
             r"((?:[\p{Han}]{2,}省)?[\p{Han}]{2,}市[\p{Han}]{2,}(?:区|县)[\p{Han}A-Za-z0-9号路街道大道弄-]+)",
+            r"\b(\d{1,6}\s+[A-Z][A-Za-z0-9 .'-]+,\s+[A-Z][A-Za-z .'-]+,\s+[A-Z]{2}\s+\d{5}(?:-\d{4})?)\b",
         ],
-        "secret" => vec![r"(synthetic-[A-Za-z0-9_ ;:.-]+)"],
+        "date_of_birth" => vec![r"\b(\d{4}-\d{2}-\d{2})\b"],
+        "secret" => vec![r"(synthetic-[A-Za-z0-9_-]+(?::\s*[A-Za-z0-9_; -]+)?)"],
         _ => detector_for(field_type)
             .map(|_| detector_pattern_for(field_type))
             .into_iter()
@@ -851,6 +860,78 @@ mod tests {
         assert!(json.contains("<INVOICE_"));
         assert!(json.contains("<NATIONAL_ID_"));
         assert!(json.contains("<BANK_CARD_"));
+        assert!(json.contains("[SUPPRESSED]"));
+    }
+
+    #[test]
+    fn process_text_replaces_complex_english_medical_identifiers() {
+        let mut fields = BTreeMap::new();
+        for (name, field_type, mechanism) in [
+            ("full_name", "person", Mechanism::HmacToken),
+            ("doctor_name", "person", Mechanism::HmacToken),
+            ("company_name", "organization", Mechanism::HmacToken),
+            ("member_id", "member", Mechanism::HmacToken),
+            ("policy_id", "policy", Mechanism::HmacToken),
+            ("claim_id", "claim", Mechanism::HmacToken),
+            ("medical_record_id", "medical_record", Mechanism::HmacToken),
+            ("phone", "phone", Mechanism::HmacToken),
+            ("email", "email", Mechanism::HmacToken),
+            ("date_of_birth", "date_of_birth", Mechanism::Suppress),
+            ("home_address", "address", Mechanism::AddressGeneralize),
+            ("raw_secret", "secret", Mechanism::Suppress),
+        ] {
+            fields.insert(
+                name.to_string(),
+                FieldPolicy {
+                    field_type: field_type.to_string(),
+                    mechanism,
+                    preserve_equality: true,
+                    required_for_task: false,
+                    bucket_size: None,
+                    address_level: Some(AddressLevel::City),
+                },
+            );
+        }
+        let policy = Policy {
+            policy_version: "test".to_string(),
+            task_profile: "healthcare_claim_review".to_string(),
+            key_domain: "test".to_string(),
+            fields,
+            constraints: ConstraintPolicy::default(),
+            statistics: vec![],
+        };
+        let input = GatewayInput {
+            content_type: ContentType::Text,
+            payload: Value::String(
+                "On April 18, 2026, Robert Smith, member MBR-7788-2211 under policy POL-ACME-4401, contacted claims at +1-212-555-0171 and robert.smith.synthetic@example.test regarding denied claim CLM-2026-4401 and record MR-US-2026-3001. The service was ordered by Dr. Emily Carter at Northbridge Oncology Center. The appeal lists date of birth as 1979-11-24, home address as 742 Evergreen Terrace, Springfield, IL 62704, and synthetic-sensitive-oncology-note. The disputed claim amount is bucketed at 38000 USD.".to_string(),
+            ),
+        };
+
+        let output = process_document(input, &policy, b"secret").unwrap();
+        let json = serde_json::to_string(&output.external_view).unwrap();
+        for raw in [
+            "Robert Smith",
+            "MBR-7788-2211",
+            "POL-ACME-4401",
+            "+1-212-555-0171",
+            "robert.smith.synthetic@example.test",
+            "CLM-2026-4401",
+            "MR-US-2026-3001",
+            "Dr. Emily Carter",
+            "Northbridge Oncology Center",
+            "1979-11-24",
+            "742 Evergreen Terrace",
+            "synthetic-sensitive-oncology-note",
+        ] {
+            assert!(!json.contains(raw), "raw value remained: {raw}");
+        }
+        assert!(json.contains("<PERSON_"));
+        assert!(json.contains("<MEMBER_"));
+        assert!(json.contains("<POLICY_"));
+        assert!(json.contains("<CLAIM_"));
+        assert!(json.contains("<MEDICAL_RECORD_"));
+        assert!(json.contains("<ORGANIZATION_"));
+        assert!(json.contains("38000 USD"));
         assert!(json.contains("[SUPPRESSED]"));
     }
 
