@@ -1,0 +1,21 @@
+services:
+  proofgate-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PROOFGATE_BIND: 0.0.0.0:8080
+      PROOFGATE_POLICY_PATH: /app/config/policy.sample.json
+      PROOFGATE_MAPPING_LOG: /app/data/local-mappings.jsonl
+      PROOFGATE_AUDIT_LOG: /app/data/audit.jsonl
+      PROOFGATE_AUDIT_POSTGRES_URL: ${PROOFGATE_AUDIT_POSTGRES_URL:-}
+      PROOFGATE_HMAC_KEY: ${PROOFGATE_HMAC_KEY:?set local secret}
+      CARGO_HOME: /workspace/.cargo-home
+      CARGO_TARGET_DIR: /workspace/target
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./.cargo-home:/workspace/.cargo-home
+      - ./target:/workspace/target

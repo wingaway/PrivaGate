@@ -1,0 +1,50 @@
+{
+  "content_type": "json",
+  "payload": {
+    "customers": [
+      {
+        "customer_id": "C-1001",
+        "person_name": "张三",
+        "phone": "13800138000",
+        "address": "上海市徐汇区漕溪北路1号",
+        "role": "borrower"
+      }
+    ],
+    "contracts": [
+      {
+        "contract_id": "K-9001",
+        "customer_id": "C-1001",
+        "contract_amount_bucket": 180000.0
+      }
+    ],
+    "events": [
+      {
+        "event_time": "2026-05-01T10:00:00Z",
+        "contract_id": "K-9001",
+        "status": "created"
+      },
+      {
+        "event_time": "2026-05-02T12:30:00Z",
+        "contract_id": "K-9001",
+        "status": "reviewed"
+      }
+    ],
+    "payments": [
+      {
+        "contract_id": "K-9001",
+        "amount": 180000.0
+      },
+      {
+        "contract_id": "K-9001",
+        "amount": 220000.0
+      }
+    ],
+    "relations": [
+      {
+        "source": "C-1001",
+        "predicate": "signs",
+        "target": "K-9001"
+      }
+    ]
+  }
+}

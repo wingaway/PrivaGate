@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proofgate-gateway
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: proofgate-gateway-secrets
+  namespace: proofgate-gateway
+type: Opaque
+stringData:
+  PROOFGATE_HMAC_KEY: replace-with-cluster-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proofgate-gateway-policy
+  namespace: proofgate-gateway
+data:
+  policy.sample.json: |
+    {
+      "policy_version": "cluster-policy-placeholder",
+      "task_profile": "contract_risk_review",
+      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "fields": {},
+      "constraints": {},
+      "statistics": []
+    }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: proofgate-gateway-data
+  namespace: proofgate-gateway
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proofgate-gateway
+  namespace: proofgate-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proofgate-gateway
+  template:
+    metadata:
+      labels:
+        app: proofgate-gateway
+    spec:
+      containers:
+        - name: proofgate-gateway
+          image: proofgate-gateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PROOFGATE_BIND
+              value: 0.0.0.0:8080
+            - name: PROOFGATE_POLICY_PATH
+              value: /app/config/policy.sample.json
+            - name: PROOFGATE_MAPPING_LOG
+              value: /app/data/local-mappings.jsonl
+            - name: PROOFGATE_AUDIT_LOG
+              value: /app/data/audit.jsonl
+            - name: PROOFGATE_HMAC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: proofgate-gateway-secrets
+                  key: PROOFGATE_HMAC_KEY
+          volumeMounts:
+            - name: policy
+              mountPath: /app/config
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+      volumes:
+        - name: policy
+          configMap:
+            name: proofgate-gateway-policy
+        - name: data
+          persistentVolumeClaim:
+            claimName: proofgate-gateway-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proofgate-gateway
+  namespace: proofgate-gateway
+spec:
+  type: ClusterIP
+  selector:
+    app: proofgate-gateway
+  ports:
+    - port: 8080
+      targetPort: 8080
+

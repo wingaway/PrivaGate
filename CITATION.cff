@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use ProofGate in research, please cite this software."
+title: "ProofGate: a verifiable redaction gateway for hybrid LLM deployment"
+version: "0.1.0"
+date-released: "2026-05-04"
+license: "Apache-2.0"
+abstract: "ProofGate studies and implements a local gateway that projects sensitive inputs into externally visible views for external LLM APIs, with reproducible privacy and utility reports."
+keywords:
+  - privacy-preserving LLM
+  - verifiable redaction
+  - data desensitization
+  - hybrid LLM deployment
+  - tokenization
+  - auditability
+authors:
+  - name: "ProofGate contributors"

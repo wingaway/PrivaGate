@@ -1,0 +1,31 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/proofgate-core",
+  "crates/proofgate-gateway",
+]
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+description = "Verifiable redaction gateway for hybrid local LLM and external API deployment."
+keywords = ["llm", "privacy", "redaction", "tokenization", "gateway"]
+categories = ["web-programming::http-server", "science"]
+
+[workspace.dependencies]
+anyhow = "1"
+axum = "0.7"
+chrono = { version = "0.4", features = ["serde"] }
+hex = "0.4"
+hmac = "0.12"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tower-http = { version = "0.5", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tokio-postgres = { version = "0.7", features = ["with-serde_json-1"] }
+uuid = { version = "1", features = ["serde", "v4"] }

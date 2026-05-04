@@ -1,0 +1,401 @@
+{
+  "policy_version": "2026.05.03-production-sample",
+  "task_profile": "contract_risk_review",
+  "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+  "fields": {
+    "person_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "doctor_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "contact_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "full_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "first_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "last_name": {
+      "field_type": "person",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "user_name": {
+      "field_type": "user",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "phone": {
+      "field_type": "phone",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "email": {
+      "field_type": "email",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "id_card": {
+      "field_type": "national_id",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "ssn": {
+      "field_type": "ssn",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "social_security_number": {
+      "field_type": "ssn",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "passport_number": {
+      "field_type": "passport_number",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "tax_id": {
+      "field_type": "tax_id",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "national_insurance_number": {
+      "field_type": "national_insurance_number",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "date_of_birth": {
+      "field_type": "date_of_birth",
+      "mechanism": "suppress",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "customer_id": {
+      "field_type": "customer",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "contract_id": {
+      "field_type": "contract",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "order_id": {
+      "field_type": "order",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "ticket_id": {
+      "field_type": "ticket",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "claim_id": {
+      "field_type": "claim",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "policy_id": {
+      "field_type": "policy",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "member_id": {
+      "field_type": "member",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "account_id": {
+      "field_type": "account",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "bank_card": {
+      "field_type": "bank_card",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "credit_card": {
+      "field_type": "credit_card",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "patient_id": {
+      "field_type": "patient",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "medical_record_id": {
+      "field_type": "medical_record",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "employee_id": {
+      "field_type": "employee",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "device_id": {
+      "field_type": "device",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "host_name": {
+      "field_type": "host",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "ip_address": {
+      "field_type": "ip_address",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "license_plate": {
+      "field_type": "license_plate",
+      "mechanism": "hmac_token",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "company_name": {
+      "field_type": "organization",
+      "mechanism": "hmac_token",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "raw_secret": {
+      "field_type": "secret",
+      "mechanism": "suppress",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "api_key": {
+      "field_type": "secret",
+      "mechanism": "suppress",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "access_token": {
+      "field_type": "secret",
+      "mechanism": "suppress",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "diagnosis_detail": {
+      "field_type": "medical_sensitive_detail",
+      "mechanism": "suppress",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
+    "role": {
+      "field_type": "role",
+      "mechanism": "passthrough",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "department": {
+      "field_type": "department",
+      "mechanism": "passthrough",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "severity": {
+      "field_type": "severity",
+      "mechanism": "passthrough",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "diagnosis_group": {
+      "field_type": "diagnosis_group",
+      "mechanism": "passthrough",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "contract_type": {
+      "field_type": "contract_type",
+      "mechanism": "passthrough",
+      "preserve_equality": true,
+      "required_for_task": true
+    },
+    "contract_amount_bucket": {
+      "field_type": "amount_bucket",
+      "mechanism": "number_bucket",
+      "preserve_equality": true,
+      "required_for_task": true,
+      "bucket_size": 100000.0
+    },
+    "transaction_amount_bucket": {
+      "field_type": "amount_bucket",
+      "mechanism": "number_bucket",
+      "preserve_equality": true,
+      "required_for_task": true,
+      "bucket_size": 50000.0
+    },
+    "claim_amount_bucket": {
+      "field_type": "amount_bucket",
+      "mechanism": "number_bucket",
+      "preserve_equality": true,
+      "required_for_task": true,
+      "bucket_size": 20000.0
+    },
+    "invoice_amount_bucket": {
+      "field_type": "amount_bucket",
+      "mechanism": "number_bucket",
+      "preserve_equality": true,
+      "required_for_task": true,
+      "bucket_size": 50000.0
+    },
+    "event_time": {
+      "field_type": "event_time",
+      "mechanism": "relative_time",
+      "preserve_equality": false,
+      "required_for_task": true
+    },
+    "address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    },
+    "shipping_address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    },
+    "billing_address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    },
+    "home_address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    },
+    "office_address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    },
+    "mailing_address": {
+      "field_type": "address",
+      "mechanism": "address_generalize",
+      "preserve_equality": false,
+      "required_for_task": false,
+      "address_level": "city"
+    }
+  },
+  "constraints": {
+    "preserve_relations": true,
+    "preserve_time_order": true,
+    "preserve_foreign_keys": true,
+    "foreign_keys": [
+      {
+        "source_table": "contracts",
+        "source_field": "customer_id",
+        "target_table": "customers",
+        "target_field": "customer_id"
+      }
+    ],
+    "time_orders": [
+      {
+        "table": "events",
+        "field": "event_time"
+      }
+    ],
+    "relations": [
+      {
+        "table": "relations",
+        "source_field": "source",
+        "predicate_field": "predicate",
+        "target_field": "target"
+      }
+    ]
+  },
+  "statistics": [
+    {
+      "name": "contract_count",
+      "table": "contracts",
+      "mechanism": "laplace_count",
+      "epsilon": 0.5,
+      "delta": 0.0,
+      "beta": 0.01,
+      "sensitivity": 1.0
+    },
+    {
+      "name": "event_status_histogram",
+      "table": "events",
+      "group_field": "status",
+      "mechanism": "laplace_histogram",
+      "epsilon": 0.75,
+      "delta": 0.0,
+      "beta": 0.01,
+      "sensitivity": 1.0
+    },
+    {
+      "name": "payment_amount_mean",
+      "table": "payments",
+      "value_field": "amount",
+      "lower": 0.0,
+      "upper": 1000000.0,
+      "mechanism": "laplace_mean",
+      "epsilon": 1.0,
+      "delta": 0.0,
+      "beta": 0.01,
+      "sensitivity": 10000.0
+    }
+  ]
+}

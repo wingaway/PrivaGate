@@ -1,0 +1,1006 @@
+{
+  "dataset_version": "2026.05.04-rich-synthetic-v1",
+  "description": "Synthetic-only dataset for ProofGate external API simulation. Do not replace these cases with real customer, patient, employee, account, or contract data.",
+  "cases": [
+    {
+      "case_id": "contract_case_001",
+      "task_profile": "contract_risk_review",
+      "task_instruction": "基于 external_view 输出合同风险摘要，保留 guarantor、contract、risk 等可见效用标签，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "person_name": "张三",
+          "phone": "13800138000",
+          "email": "zhangsan.synthetic@example.test",
+          "id_card": "110101199001011234",
+          "role": "guarantor",
+          "contract_type": "guarantee_contract",
+          "contract_amount_bucket": 180000.0,
+          "event_time": "2026-05-01T10:00:00Z",
+          "address": "上海市徐汇区漕溪北路1号",
+          "raw_secret": "synthetic-contract-secret-001"
+        }
+      },
+      "expected_sensitive_values": [
+        "张三",
+        "13800138000",
+        "zhangsan.synthetic@example.test",
+        "110101199001011234",
+        "synthetic-contract-secret-001"
+      ],
+      "expected_utility_terms": [
+        "guarantor",
+        "contract",
+        "risk"
+      ]
+    },
+    {
+      "case_id": "multitable_contract_case_001",
+      "task_profile": "contract_risk_review",
+      "task_instruction": "分析多客户多合同数据，输出 borrower、reviewed、overdue 等状态和关系风险，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "customers": [
+            {
+              "customer_id": "C-1001",
+              "person_name": "李四",
+              "phone": "13900139000",
+              "email": "lisi.synthetic@example.test",
+              "address": "北京市海淀区中关村大街1号",
+              "role": "borrower"
+            },
+            {
+              "customer_id": "C-1002",
+              "person_name": "王五",
+              "phone": "13700137000",
+              "email": "wangwu.synthetic@example.test",
+              "address": "浙江省杭州市西湖区文三路88号",
+              "role": "co_borrower"
+            },
+            {
+              "customer_id": "C-1003",
+              "person_name": "赵六",
+              "phone": "13600136000",
+              "email": "zhaoliu.synthetic@example.test",
+              "address": "广东省深圳市南山区科技园1号",
+              "role": "guarantor"
+            }
+          ],
+          "contracts": [
+            {
+              "contract_id": "K-9001",
+              "customer_id": "C-1001",
+              "contract_type": "loan_contract",
+              "contract_amount_bucket": 260000.0
+            },
+            {
+              "contract_id": "K-9002",
+              "customer_id": "C-1002",
+              "contract_type": "loan_contract",
+              "contract_amount_bucket": 420000.0
+            }
+          ],
+          "events": [
+            {
+              "event_time": "2026-05-01T10:00:00Z",
+              "contract_id": "K-9001",
+              "status": "created"
+            },
+            {
+              "event_time": "2026-05-03T12:30:00Z",
+              "contract_id": "K-9001",
+              "status": "reviewed"
+            },
+            {
+              "event_time": "2026-05-05T09:00:00Z",
+              "contract_id": "K-9002",
+              "status": "overdue"
+            }
+          ],
+          "payments": [
+            {
+              "contract_id": "K-9001",
+              "amount": 120000.0
+            },
+            {
+              "contract_id": "K-9001",
+              "amount": 140000.0
+            },
+            {
+              "contract_id": "K-9002",
+              "amount": 80000.0
+            }
+          ],
+          "relations": [
+            {
+              "source": "C-1001",
+              "predicate": "signs",
+              "target": "K-9001"
+            },
+            {
+              "source": "C-1002",
+              "predicate": "signs",
+              "target": "K-9002"
+            },
+            {
+              "source": "C-1003",
+              "predicate": "guarantees",
+              "target": "K-9002"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "李四",
+        "王五",
+        "赵六",
+        "13900139000",
+        "13700137000",
+        "13600136000",
+        "lisi.synthetic@example.test",
+        "wangwu.synthetic@example.test",
+        "zhaoliu.synthetic@example.test",
+        "C-1001",
+        "C-1002",
+        "C-1003",
+        "K-9001",
+        "K-9002"
+      ],
+      "expected_utility_terms": [
+        "borrower",
+        "reviewed",
+        "overdue"
+      ]
+    },
+    {
+      "case_id": "finance_account_case_001",
+      "task_profile": "financial_risk_review",
+      "task_instruction": "分析账户交易风险，输出 suspicious、manual_review、account 等可见标签和理由，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "customers": [
+            {
+              "customer_id": "FIN-C-2001",
+              "person_name": "孙七",
+              "phone": "13500135000",
+              "id_card": "310101198812120987",
+              "address": "江苏省苏州市工业园区星湖街99号",
+              "role": "account_owner"
+            }
+          ],
+          "accounts": [
+            {
+              "account_id": "ACCT-778899",
+              "customer_id": "FIN-C-2001",
+              "bank_card": "6222020202020202020",
+              "role": "settlement_account"
+            }
+          ],
+          "events": [
+            {
+              "event_time": "2026-04-29T08:00:00Z",
+              "account_id": "ACCT-778899",
+              "transaction_amount_bucket": 48000.0,
+              "status": "normal"
+            },
+            {
+              "event_time": "2026-04-29T08:03:00Z",
+              "account_id": "ACCT-778899",
+              "transaction_amount_bucket": 51000.0,
+              "status": "suspicious"
+            },
+            {
+              "event_time": "2026-04-29T08:06:00Z",
+              "account_id": "ACCT-778899",
+              "transaction_amount_bucket": 52000.0,
+              "status": "manual_review"
+            }
+          ],
+          "relations": [
+            {
+              "source": "FIN-C-2001",
+              "predicate": "owns",
+              "target": "ACCT-778899"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "孙七",
+        "13500135000",
+        "310101198812120987",
+        "FIN-C-2001",
+        "ACCT-778899",
+        "6222020202020202020"
+      ],
+      "expected_utility_terms": [
+        "suspicious",
+        "manual_review",
+        "account"
+      ]
+    },
+    {
+      "case_id": "healthcare_triage_case_001",
+      "task_profile": "healthcare_triage_summary",
+      "task_instruction": "基于外部可见视图输出医疗分诊摘要，保留 cardiology、follow_up、high 等效用标签，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "patients": [
+            {
+              "patient_id": "P-3001",
+              "person_name": "周八",
+              "phone": "13400134000",
+              "id_card": "440101197701019876",
+              "address": "四川省成都市武侯区人民南路2号",
+              "diagnosis_group": "cardiology",
+              "diagnosis_detail": "synthetic-rare-disease-detail"
+            }
+          ],
+          "records": [
+            {
+              "medical_record_id": "MR-2026-0001",
+              "patient_id": "P-3001",
+              "doctor_name": "钱医生",
+              "department": "cardiology",
+              "event_time": "2026-05-02T09:00:00Z",
+              "severity": "high",
+              "status": "follow_up"
+            }
+          ],
+          "relations": [
+            {
+              "source": "P-3001",
+              "predicate": "has_record",
+              "target": "MR-2026-0001"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "周八",
+        "钱医生",
+        "13400134000",
+        "440101197701019876",
+        "P-3001",
+        "MR-2026-0001",
+        "synthetic-rare-disease-detail"
+      ],
+      "expected_utility_terms": [
+        "cardiology",
+        "follow_up",
+        "high"
+      ]
+    },
+    {
+      "case_id": "security_log_case_001",
+      "task_profile": "security_incident_review",
+      "task_instruction": "分析安全日志，输出 blocked、lateral_movement、high 等可见标签、事件顺序和处置建议，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "events": [
+            {
+              "event_time": "2026-05-04T01:01:00Z",
+              "employee_id": "EMP-8848",
+              "device_id": "DEV-A1B2C3",
+              "host_name": "workstation-17.internal.synthetic",
+              "ip_address": "10.12.45.77",
+              "severity": "medium",
+              "status": "login_anomaly"
+            },
+            {
+              "event_time": "2026-05-04T01:04:30Z",
+              "employee_id": "EMP-8848",
+              "device_id": "DEV-A1B2C3",
+              "host_name": "finance-share.internal.synthetic",
+              "ip_address": "10.12.45.91",
+              "severity": "high",
+              "status": "lateral_movement",
+              "api_key": "sk-synthetic-security-key"
+            },
+            {
+              "event_time": "2026-05-04T01:08:30Z",
+              "employee_id": "EMP-8848",
+              "device_id": "DEV-A1B2C3",
+              "host_name": "finance-share.internal.synthetic",
+              "ip_address": "10.12.45.91",
+              "severity": "high",
+              "status": "blocked"
+            }
+          ],
+          "relations": [
+            {
+              "source": "EMP-8848",
+              "predicate": "uses",
+              "target": "DEV-A1B2C3"
+            },
+            {
+              "source": "DEV-A1B2C3",
+              "predicate": "connects_to",
+              "target": "finance-share.internal.synthetic"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "EMP-8848",
+        "DEV-A1B2C3",
+        "workstation-17.internal.synthetic",
+        "finance-share.internal.synthetic",
+        "10.12.45.77",
+        "10.12.45.91",
+        "sk-synthetic-security-key"
+      ],
+      "expected_utility_terms": [
+        "blocked",
+        "lateral_movement",
+        "high"
+      ]
+    },
+    {
+      "case_id": "rag_document_case_001",
+      "task_profile": "rag_privacy_projection",
+      "task_instruction": "基于脱敏后的 RAG 文档片段输出客户续约风险摘要，保留 renewal、complaint、pricing 标签，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "chunks": [
+            {
+              "ticket_id": "TCK-5001",
+              "customer_id": "RAG-C-5001",
+              "contract_id": "RAG-K-5001",
+              "person_name": "吴九",
+              "phone": "13300133000",
+              "email": "wujiu.synthetic@example.test",
+              "status": "complaint",
+              "topic": "pricing",
+              "event_time": "2026-04-20T14:00:00Z"
+            },
+            {
+              "ticket_id": "TCK-5002",
+              "customer_id": "RAG-C-5001",
+              "contract_id": "RAG-K-5001",
+              "person_name": "吴九",
+              "phone": "13300133000",
+              "email": "wujiu.synthetic@example.test",
+              "status": "renewal_risk",
+              "topic": "renewal",
+              "event_time": "2026-04-21T15:30:00Z"
+            }
+          ],
+          "relations": [
+            {
+              "source": "RAG-C-5001",
+              "predicate": "references",
+              "target": "RAG-K-5001"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "TCK-5001",
+        "TCK-5002",
+        "RAG-C-5001",
+        "RAG-K-5001",
+        "吴九",
+        "13300133000",
+        "wujiu.synthetic@example.test"
+      ],
+      "expected_utility_terms": [
+        "renewal",
+        "complaint",
+        "pricing"
+      ]
+    },
+    {
+      "case_id": "text_freeform_case_001",
+      "task_profile": "freeform_text_redaction",
+      "task_instruction": "基于自由文本外部可见视图输出 support 摘要，保留 refund、payment、support 标签，不得还原 token 原值。",
+      "input": {
+        "content_type": "text",
+        "payload": "合成客服记录：用户使用手机号 13200132000 和邮箱 support.synthetic@example.test 咨询 refund 进度，曾提交身份证号 330101199505053333，问题类型为 payment support。"
+      },
+      "expected_sensitive_values": [
+        "13200132000",
+        "support.synthetic@example.test",
+        "330101199505053333"
+      ],
+      "expected_utility_terms": [
+        "support",
+        "refund",
+        "payment"
+      ]
+    },
+    {
+      "case_id": "customer_support_case_001",
+      "task_profile": "customer_support_summary",
+      "task_instruction": "分析客服工单，输出 refund、delivery_delay、high 等可见标签和处理建议，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "tickets": [
+            {
+              "ticket_id": "SUP-7001",
+              "order_id": "ORD-7001",
+              "person_name": "郑十",
+              "phone": "13100131000",
+              "shipping_address": "重庆市渝中区解放碑1号",
+              "role": "buyer",
+              "severity": "high",
+              "status": "delivery_delay",
+              "event_time": "2026-05-01T11:00:00Z",
+              "raw_secret": "synthetic-support-internal-note"
+            },
+            {
+              "ticket_id": "SUP-7002",
+              "order_id": "ORD-7001",
+              "person_name": "郑十",
+              "phone": "13100131000",
+              "shipping_address": "重庆市渝中区解放碑1号",
+              "role": "buyer",
+              "severity": "medium",
+              "status": "refund_requested",
+              "event_time": "2026-05-02T12:15:00Z"
+            }
+          ],
+          "relations": [
+            {
+              "source": "SUP-7001",
+              "predicate": "relates_to_order",
+              "target": "ORD-7001"
+            },
+            {
+              "source": "SUP-7002",
+              "predicate": "relates_to_order",
+              "target": "ORD-7001"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "SUP-7001",
+        "SUP-7002",
+        "ORD-7001",
+        "郑十",
+        "13100131000",
+        "synthetic-support-internal-note"
+      ],
+      "expected_utility_terms": [
+        "refund",
+        "delivery_delay",
+        "high"
+      ]
+    },
+    {
+      "case_id": "supply_chain_case_001",
+      "task_profile": "supply_chain_review",
+      "task_instruction": "分析供应链履约风险，输出 delayed、invoice、quality_hold 标签和建议，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "suppliers": [
+            {
+              "company_name": "合成精密制造有限公司",
+              "contact_name": "冯十一",
+              "phone": "13000130000",
+              "email": "supplier.synthetic@example.test",
+              "address": "天津市滨海新区创新路66号",
+              "role": "supplier"
+            }
+          ],
+          "orders": [
+            {
+              "order_id": "SC-8001",
+              "company_name": "合成精密制造有限公司",
+              "license_plate": "沪A12345",
+              "invoice_amount_bucket": 190000.0,
+              "status": "delayed",
+              "event_time": "2026-05-03T08:00:00Z"
+            },
+            {
+              "order_id": "SC-8002",
+              "company_name": "合成精密制造有限公司",
+              "license_plate": "沪A12345",
+              "invoice_amount_bucket": 210000.0,
+              "status": "quality_hold",
+              "event_time": "2026-05-04T09:30:00Z"
+            }
+          ],
+          "relations": [
+            {
+              "source": "合成精密制造有限公司",
+              "predicate": "fulfills",
+              "target": "SC-8001"
+            },
+            {
+              "source": "合成精密制造有限公司",
+              "predicate": "fulfills",
+              "target": "SC-8002"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "合成精密制造有限公司",
+        "冯十一",
+        "13000130000",
+        "supplier.synthetic@example.test",
+        "沪A12345",
+        "SC-8001",
+        "SC-8002"
+      ],
+      "expected_utility_terms": [
+        "delayed",
+        "invoice",
+        "quality_hold"
+      ]
+    },
+    {
+      "case_id": "statistics_volume_case_001",
+      "task_profile": "statistical_utility_review",
+      "task_instruction": "分析较大合成多表数据的状态分布和付款风险，保留 created、reviewed、paid 标签，不得还原 token 原值。",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "customers": [
+            {
+              "customer_id": "STAT-C-9001",
+              "person_name": "测试甲",
+              "phone": "12900129001",
+              "address": "上海市浦东新区世纪大道1号",
+              "role": "borrower"
+            },
+            {
+              "customer_id": "STAT-C-9002",
+              "person_name": "测试乙",
+              "phone": "12900129002",
+              "address": "上海市浦东新区世纪大道2号",
+              "role": "borrower"
+            },
+            {
+              "customer_id": "STAT-C-9003",
+              "person_name": "测试丙",
+              "phone": "12900129003",
+              "address": "上海市浦东新区世纪大道3号",
+              "role": "guarantor"
+            },
+            {
+              "customer_id": "STAT-C-9004",
+              "person_name": "测试丁",
+              "phone": "12900129004",
+              "address": "上海市浦东新区世纪大道4号",
+              "role": "co_borrower"
+            }
+          ],
+          "contracts": [
+            {
+              "contract_id": "STAT-K-9101",
+              "customer_id": "STAT-C-9001",
+              "contract_type": "loan_contract",
+              "contract_amount_bucket": 110000.0
+            },
+            {
+              "contract_id": "STAT-K-9102",
+              "customer_id": "STAT-C-9002",
+              "contract_type": "loan_contract",
+              "contract_amount_bucket": 220000.0
+            },
+            {
+              "contract_id": "STAT-K-9103",
+              "customer_id": "STAT-C-9003",
+              "contract_type": "guarantee_contract",
+              "contract_amount_bucket": 330000.0
+            },
+            {
+              "contract_id": "STAT-K-9104",
+              "customer_id": "STAT-C-9004",
+              "contract_type": "loan_contract",
+              "contract_amount_bucket": 440000.0
+            }
+          ],
+          "events": [
+            {
+              "event_time": "2026-05-01T08:00:00Z",
+              "contract_id": "STAT-K-9101",
+              "status": "created"
+            },
+            {
+              "event_time": "2026-05-01T09:00:00Z",
+              "contract_id": "STAT-K-9102",
+              "status": "created"
+            },
+            {
+              "event_time": "2026-05-02T10:00:00Z",
+              "contract_id": "STAT-K-9101",
+              "status": "reviewed"
+            },
+            {
+              "event_time": "2026-05-03T11:00:00Z",
+              "contract_id": "STAT-K-9102",
+              "status": "paid"
+            },
+            {
+              "event_time": "2026-05-04T12:00:00Z",
+              "contract_id": "STAT-K-9104",
+              "status": "paid"
+            }
+          ],
+          "payments": [
+            {
+              "contract_id": "STAT-K-9101",
+              "amount": 30000.0
+            },
+            {
+              "contract_id": "STAT-K-9102",
+              "amount": 90000.0
+            },
+            {
+              "contract_id": "STAT-K-9103",
+              "amount": 120000.0
+            },
+            {
+              "contract_id": "STAT-K-9104",
+              "amount": 160000.0
+            }
+          ],
+          "relations": [
+            {
+              "source": "STAT-C-9001",
+              "predicate": "signs",
+              "target": "STAT-K-9101"
+            },
+            {
+              "source": "STAT-C-9002",
+              "predicate": "signs",
+              "target": "STAT-K-9102"
+            },
+            {
+              "source": "STAT-C-9003",
+              "predicate": "guarantees",
+              "target": "STAT-K-9103"
+            },
+            {
+              "source": "STAT-C-9004",
+              "predicate": "signs",
+              "target": "STAT-K-9104"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "STAT-C-9001",
+        "STAT-C-9002",
+        "STAT-C-9003",
+        "STAT-C-9004",
+        "STAT-K-9101",
+        "STAT-K-9102",
+        "STAT-K-9103",
+        "STAT-K-9104",
+        "测试甲",
+        "测试乙",
+        "测试丙",
+        "测试丁",
+        "12900129001",
+        "12900129002",
+        "12900129003",
+        "12900129004"
+      ],
+      "expected_utility_terms": [
+        "created",
+        "reviewed",
+        "paid"
+      ]
+    },
+    {
+      "case_id": "english_contract_case_001",
+      "task_profile": "contract_risk_review",
+      "task_instruction": "Summarize contract risk from external_view. Preserve vendor, renewal, breach, contract, and risk terms. Do not infer or restore token originals.",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "customers": [
+            {
+              "customer_id": "US-CUST-1001",
+              "full_name": "Alice Johnson",
+              "phone": "+1 (415) 555-0198",
+              "email": "alice.johnson.synthetic@example.test",
+              "ssn": "123-45-6789",
+              "passport_number": "A12345678",
+              "billing_address": "100 Market St, San Francisco, CA 94105, USA",
+              "role": "vendor"
+            }
+          ],
+          "contracts": [
+            {
+              "contract_id": "US-K-2026-0001",
+              "customer_id": "US-CUST-1001",
+              "contract_type": "renewal_contract",
+              "contract_amount_bucket": 875000.0,
+              "status": "breach_review"
+            }
+          ],
+          "events": [
+            {
+              "event_time": "2026-05-01T16:00:00Z",
+              "contract_id": "US-K-2026-0001",
+              "status": "renewal"
+            },
+            {
+              "event_time": "2026-05-02T18:30:00Z",
+              "contract_id": "US-K-2026-0001",
+              "status": "breach_review"
+            }
+          ],
+          "relations": [
+            {
+              "source": "US-CUST-1001",
+              "predicate": "signs",
+              "target": "US-K-2026-0001"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "US-CUST-1001",
+        "US-K-2026-0001",
+        "Alice Johnson",
+        "+1 (415) 555-0198",
+        "alice.johnson.synthetic@example.test",
+        "123-45-6789",
+        "A12345678",
+        "100 Market St",
+        "94105"
+      ],
+      "expected_utility_terms": [
+        "vendor",
+        "renewal",
+        "breach"
+      ]
+    },
+    {
+      "case_id": "english_healthcare_claim_case_001",
+      "task_profile": "healthcare_claim_review",
+      "task_instruction": "Summarize healthcare claim triage from external_view. Preserve oncology, denied, appeal, high, and claim terms. Do not infer or restore token originals.",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "patients": [
+            {
+              "patient_id": "PAT-US-3001",
+              "member_id": "MBR-7788-2211",
+              "full_name": "Robert Smith",
+              "phone": "+1-212-555-0171",
+              "email": "robert.smith.synthetic@example.test",
+              "date_of_birth": "1979-11-24",
+              "home_address": "742 Evergreen Terrace, Springfield, IL 62704, USA",
+              "diagnosis_group": "oncology",
+              "diagnosis_detail": "synthetic-sensitive-oncology-note"
+            }
+          ],
+          "records": [
+            {
+              "medical_record_id": "MR-US-2026-3001",
+              "patient_id": "PAT-US-3001",
+              "doctor_name": "Dr. Emily Carter",
+              "department": "oncology",
+              "severity": "high",
+              "event_time": "2026-05-03T13:00:00Z",
+              "status": "appeal"
+            }
+          ],
+          "claims": [
+            {
+              "claim_id": "CLM-2026-4401",
+              "policy_id": "POL-ACME-4401",
+              "member_id": "MBR-7788-2211",
+              "claim_amount_bucket": 38000.0,
+              "status": "denied"
+            }
+          ],
+          "relations": [
+            {
+              "source": "PAT-US-3001",
+              "predicate": "has_record",
+              "target": "MR-US-2026-3001"
+            },
+            {
+              "source": "MBR-7788-2211",
+              "predicate": "files_claim",
+              "target": "CLM-2026-4401"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "PAT-US-3001",
+        "MBR-7788-2211",
+        "Robert Smith",
+        "+1-212-555-0171",
+        "robert.smith.synthetic@example.test",
+        "1979-11-24",
+        "742 Evergreen Terrace",
+        "62704",
+        "synthetic-sensitive-oncology-note",
+        "MR-US-2026-3001",
+        "Dr. Emily Carter",
+        "CLM-2026-4401",
+        "POL-ACME-4401"
+      ],
+      "expected_utility_terms": [
+        "oncology",
+        "denied",
+        "appeal"
+      ]
+    },
+    {
+      "case_id": "english_security_log_case_001",
+      "task_profile": "security_incident_review",
+      "task_instruction": "Analyze the English security event chain. Preserve critical, privilege_escalation, blocked, and device terms. Do not infer or restore token originals.",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "events": [
+            {
+              "event_time": "2026-05-04T02:15:00Z",
+              "user_name": "alice.ops",
+              "employee_id": "EMP-US-7001",
+              "device_id": "LAPTOP-US-7788",
+              "host_name": "corp-laptop-7788.synthetic.local",
+              "ip_address": "192.168.10.25",
+              "severity": "medium",
+              "status": "impossible_travel"
+            },
+            {
+              "event_time": "2026-05-04T02:18:40Z",
+              "user_name": "alice.ops",
+              "employee_id": "EMP-US-7001",
+              "device_id": "LAPTOP-US-7788",
+              "host_name": "domain-controller-01.synthetic.local",
+              "ip_address": "192.168.10.5",
+              "severity": "critical",
+              "status": "privilege_escalation",
+              "access_token": "ghp_synthetic_access_token_english"
+            },
+            {
+              "event_time": "2026-05-04T02:20:05Z",
+              "user_name": "alice.ops",
+              "employee_id": "EMP-US-7001",
+              "device_id": "LAPTOP-US-7788",
+              "host_name": "domain-controller-01.synthetic.local",
+              "ip_address": "192.168.10.5",
+              "severity": "critical",
+              "status": "blocked"
+            }
+          ],
+          "relations": [
+            {
+              "source": "alice.ops",
+              "predicate": "uses",
+              "target": "LAPTOP-US-7788"
+            },
+            {
+              "source": "LAPTOP-US-7788",
+              "predicate": "connects_to",
+              "target": "domain-controller-01.synthetic.local"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "alice.ops",
+        "EMP-US-7001",
+        "LAPTOP-US-7788",
+        "corp-laptop-7788.synthetic.local",
+        "domain-controller-01.synthetic.local",
+        "192.168.10.25",
+        "192.168.10.5",
+        "ghp_synthetic_access_token_english"
+      ],
+      "expected_utility_terms": [
+        "critical",
+        "privilege_escalation",
+        "blocked"
+      ]
+    },
+    {
+      "case_id": "english_freeform_text_case_001",
+      "task_profile": "freeform_text_redaction",
+      "task_instruction": "Summarize the English support note. Preserve refund, account, payment, and support terms. Do not infer or restore token originals.",
+      "input": {
+        "content_type": "text",
+        "payload": "Synthetic support note: call +1 650-555-0142 or email support.agent.synthetic@example.test. The customer provided SSN 987-65-4321 and card 4111 1111 1111 1111 while asking about refund, account, payment, and support status."
+      },
+      "expected_sensitive_values": [
+        "+1 650-555-0142",
+        "support.agent.synthetic@example.test",
+        "987-65-4321",
+        "4111 1111 1111 1111"
+      ],
+      "expected_utility_terms": [
+        "refund",
+        "account",
+        "payment"
+      ]
+    },
+    {
+      "case_id": "english_insurance_policy_case_001",
+      "task_profile": "insurance_policy_review",
+      "task_instruction": "Analyze insurance policy and claim risk. Preserve policy, claim, under_review, and fraud_check terms. Do not infer or restore token originals.",
+      "input": {
+        "content_type": "json",
+        "payload": {
+          "customers": [
+            {
+              "customer_id": "INS-C-5501",
+              "full_name": "Mary Williams",
+              "phone": "+44 20 7946 0958",
+              "email": "mary.williams.synthetic@example.test",
+              "national_insurance_number": "QQ123456C",
+              "mailing_address": "221B Baker Street, London, NW1 6XE, UK",
+              "role": "policy_holder"
+            }
+          ],
+          "policies": [
+            {
+              "policy_id": "POL-UK-5501",
+              "customer_id": "INS-C-5501",
+              "contract_type": "insurance_policy",
+              "status": "under_review"
+            }
+          ],
+          "claims": [
+            {
+              "claim_id": "CLM-UK-5501",
+              "policy_id": "POL-UK-5501",
+              "claim_amount_bucket": 24000.0,
+              "status": "fraud_check"
+            }
+          ],
+          "events": [
+            {
+              "event_time": "2026-05-01T09:30:00Z",
+              "policy_id": "POL-UK-5501",
+              "status": "claim_opened"
+            },
+            {
+              "event_time": "2026-05-02T10:45:00Z",
+              "policy_id": "POL-UK-5501",
+              "status": "under_review"
+            }
+          ],
+          "relations": [
+            {
+              "source": "INS-C-5501",
+              "predicate": "owns_policy",
+              "target": "POL-UK-5501"
+            },
+            {
+              "source": "POL-UK-5501",
+              "predicate": "has_claim",
+              "target": "CLM-UK-5501"
+            }
+          ]
+        }
+      },
+      "expected_sensitive_values": [
+        "INS-C-5501",
+        "Mary Williams",
+        "+44 20 7946 0958",
+        "mary.williams.synthetic@example.test",
+        "QQ123456C",
+        "221B Baker Street",
+        "NW1 6XE",
+        "POL-UK-5501",
+        "CLM-UK-5501"
+      ],
+      "expected_utility_terms": [
+        "policy",
+        "claim",
+        "under_review"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "content_type": "json",
+  "payload": {
+    "person_name": "张三",
+    "phone": "13800138000",
+    "id_card": "110101199001011234",
+    "role": "guarantor",
+    "contract_amount_bucket": 180000.0,
+    "event_time": "2026-05-01T10:00:00Z",
+    "address": "上海市徐汇区漕溪北路1号",
+    "raw_secret": "internal-api-key"
+  }
+}
