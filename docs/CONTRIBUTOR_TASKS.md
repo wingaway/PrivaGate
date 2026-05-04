@@ -1,21 +1,19 @@
-# Contributor Tasks / 贡献任务池
+# Contributor Tasks
 
 This file lists contribution areas that are useful for ProofGate and small enough to be reviewed incrementally.
 
-本文列出适合社区共建的方向，优先鼓励小步提交和可复现验证。
-
-## Good First Issues / 新贡献者任务
+## Good First Issues
 
 - Add synthetic examples for new identifier formats.
 - Add unit tests for existing text detectors.
-- Improve English and Chinese documentation consistency.
+- Improve documentation consistency.
 - Add comments to complex verification code where they clarify assumptions.
 - Add curl and PowerShell examples for existing API endpoints.
 - Expand `expected_utility_terms` in synthetic test cases without using real data.
 
-## Detectors / 检测器
+## Detectors
 
-- Chinese enterprise identifiers: unified social credit code, invoice number, license number.
+- Enterprise identifiers: tax IDs, invoice numbers, license numbers, and registry numbers.
 - English identifiers: tax ID variants, insurance member formats, IBAN-like examples, postal-code patterns.
 - Security logs: API key patterns, cloud resource IDs, hostnames, internal domains, IPv6.
 - Code repositories: secrets in `.env`, YAML, JSON, TOML, shell, and CI files.
@@ -26,7 +24,7 @@ Contribution expectation:
 - Explain false-positive and false-negative risks.
 - Add tests and update the policy sample if needed.
 
-## Projection Mechanisms / 投影机制
+## Projection Mechanisms
 
 - Random tokenization for tasks that do not require equality joins.
 - Configurable date granularity.
@@ -40,7 +38,7 @@ Contribution expectation:
 - Add verification results to reports.
 - Add focused tests and at least one counterexample.
 
-## Utility and Verification / 效用与验证
+## Utility and Verification
 
 - Foreign-key preservation metrics.
 - Event-order validation for nested JSON.
@@ -54,7 +52,7 @@ Contribution expectation:
 - Add deterministic tests.
 - Document when the metric is insufficient.
 
-## Model Adapters / 模型 Adapter
+## Model Adapters
 
 - OpenAI-compatible external adapter.
 - Local Ollama adapter.
@@ -67,7 +65,7 @@ Contribution expectation:
 - Do not log API keys or Authorization headers.
 - Add tests proving raw input, mappings, and local keys are not sent.
 
-## Benchmarks / Benchmark
+## Benchmarks
 
 - Multilingual synthetic redaction benchmark.
 - Complex multi-table relationship benchmark.
@@ -81,16 +79,14 @@ Contribution expectation:
 - Provide expected privacy and utility outputs.
 - Record reproducible commands and versioned metrics.
 
-## Documentation / 文档
+## Documentation
 
-- Keep English and Chinese entry points aligned.
+- Keep documentation English-only.
 - Add diagrams only when they clarify a data flow or trust boundary.
 - Prefer short academic prose over marketing language.
 - Keep limitations visible.
 
-## Labels / 建议标签
-
-Suggested GitHub labels:
+## Suggested Labels
 
 - `good first issue`
 - `help wanted`

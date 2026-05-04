@@ -1,28 +1,15 @@
-# 本地依赖和缓存位置
+# Local Dependency Cache
 
-本项目要求依赖缓存、构建产物和运行缓存放在项目目录内，避免写入 C 盘用户目录。
+ProofGate keeps local development artifacts inside the repository directory to avoid uncontrolled writes to user-level locations.
 
-## Rust / Cargo
+Ignored local directories:
 
-PowerShell 开发前先执行：
+- `.cargo-home/`
+- `.rustup-home/`
+- `target/`
+- `.cache/`
+- `data/`
 
-```powershell
-.\scripts\dev-env.ps1
-```
+The scripts `scripts/dev-env.sh` and `scripts/dev-env.ps1` set Cargo and ProofGate paths for local development.
 
-该脚本设置：
-
-```text
-CARGO_HOME=E:\CodeHub\ProofGate\.cargo-home
-RUSTUP_HOME=E:\CodeHub\ProofGate\.rustup-home
-CARGO_TARGET_DIR=E:\CodeHub\ProofGate\target
-```
-
-`.cargo/config.toml` 同时把 Cargo 构建产物固定到仓库内 `target/`。
-
-## 约束
-
-- 不把依赖下载到 `C:\Users\<user>\.cargo`。
-- 不把 Rust 工具链下载到 `C:\Users\<user>\.rustup`。
-- 不把构建产物放到 C 盘临时目录。
-- 运行数据库、对象存储和审计日志时，Docker volume 也应显式映射到项目目录或 E 盘专用数据目录。
+These directories are local-only and must not be committed.

@@ -1,21 +1,16 @@
-# 外部模型 Adapter 边界
+# Model Adapters
 
-项目保留 `/v1/model-dispatch` 作为外部模型调用边界。当前默认实现不接入具体模型供应商。
+`/v1/model-dispatch` is a reserved adapter boundary. The current default implementation does not call any model provider and returns `dispatched=false`.
 
-## 原则
+Future adapters may support OpenAI-compatible APIs, local Ollama, local vLLM, or enterprise model gateways.
 
-- adapter 只能接收 `external_view`。
-- adapter 不能接收原始输入。
-- adapter 不能接收本地 HMAC key。
-- adapter 不能接收 token 映射表。
-- adapter 输出必须经过 `/v1/inspect-output` 或同等本地输出检查。
+Adapter requirements:
 
-## 当前状态
+- Accept only `external_view`.
+- Never receive raw input.
+- Never receive local mapping logs.
+- Never receive local keys.
+- Never log API keys or Authorization headers.
+- Include tests proving the adapter boundary.
 
-默认实现为 `DisabledModelAdapter`：
-
-- 不发起任何网络请求。
-- 不读取任何模型 API key。
-- 返回 `dispatched=false`。
-
-该设计确保隐私投影、证明报告、审计和输出检查可以独立运行。具体模型供应商接入只应发生在 adapter 实现层。
+Changes to adapter semantics require an RFC.

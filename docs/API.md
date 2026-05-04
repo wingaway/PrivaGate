@@ -1,10 +1,12 @@
-# API
+# API Reference
+
+All examples assume the gateway is running at `http://127.0.0.1:8080`. Requests and responses are JSON unless noted.
 
 ## POST /v1/project
 
-将原始输入投影为外部可见视图，并返回隐私证明、效用证明和审计摘要。
+Project raw input into an external-visible view and return privacy, utility, and audit reports.
 
-请求：
+Request:
 
 ```json
 {
@@ -13,13 +15,13 @@
 }
 ```
 
-`content_type` 支持：
+Supported `content_type` values:
 
 - `json`
 - `csv_rows`
 - `text`
 
-响应：
+Response:
 
 ```json
 {
@@ -30,17 +32,19 @@
 }
 ```
 
-本地 token 映射不会出现在响应中，只写入 `PROOFGATE_MAPPING_LOG` 指向的本地 JSONL 文件。审计摘要、报告 ID 和验证结果会写入 `PROOFGATE_AUDIT_LOG`。
+Local token mappings are never returned. They are written to the local JSONL file configured by `PROOFGATE_MAPPING_LOG`. Audit summaries and verification results are written to `PROOFGATE_AUDIT_LOG`.
 
 ## POST /v1/statistics
 
-在本地对策略声明的统计项执行差分隐私统计，不外发行级数据。当前支持：
+Run local differential-privacy statistics declared by policy. Row-level data is not sent externally.
+
+Current mechanisms:
 
 - `laplace_count`
 - `laplace_histogram`
 - `laplace_mean`
 
-请求：
+Request:
 
 ```json
 {
@@ -53,7 +57,7 @@
 }
 ```
 
-响应：
+Response:
 
 ```json
 {
@@ -68,13 +72,11 @@
 }
 ```
 
-统计结果和预算摘要会写入本地 append-only 审计日志。
-
 ## POST /v1/inspect-output
 
-外部模型返回后，按 `audit_id` 读取本地映射，检查输出中是否包含原始敏感值。
+Inspect external model output against the local mapping for an `audit_id`.
 
-请求：
+Request:
 
 ```json
 {
@@ -83,7 +85,7 @@
 }
 ```
 
-响应：
+Response:
 
 ```json
 {
@@ -94,11 +96,34 @@
 }
 ```
 
+## POST /v1/restore-output
+
+Restore authorized tokens in model output using the local mapping log. This endpoint does not call any external model.
+
+Request:
+
+```json
+{
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "output": "model output with <PERSON_xxx>"
+}
+```
+
+Response:
+
+```json
+{
+  "audit_id": "00000000-0000-0000-0000-000000000000",
+  "restored_output": "model output with original value",
+  "replacements": 1
+}
+```
+
 ## POST /v1/rag/project-chunks
 
-对 RAG 入库或检索上下文的 chunk 批量投影，并为每个 chunk 返回外部可见视图 hash 和审计 ID。
+Project RAG chunks before indexing or before external-context use.
 
-请求：
+Request:
 
 ```json
 {
@@ -107,13 +132,13 @@
       "chunk_id": "chunk-1",
       "source_uri": "local://doc-1",
       "content_type": "text",
-      "payload": "请联系 13800138000"
+      "payload": "please contact +1 650-555-0142"
     }
   ]
 }
 ```
 
-响应：
+Response:
 
 ```json
 {
@@ -133,9 +158,9 @@
 
 ## POST /v1/tool/inspect
 
-检查 Agent 工具输入和输出是否包含此前审计 ID 关联的原始敏感值。
+Inspect agent tool input and output for unauthorized sensitive values associated with previous audit IDs.
 
-请求：
+Request:
 
 ```json
 {
@@ -146,22 +171,11 @@
 }
 ```
 
-响应：
-
-```json
-{
-  "tool_name": "database.query",
-  "passed": true,
-  "unauthorized_sensitive_count": 0,
-  "findings": []
-}
-```
-
 ## POST /v1/session/risk
 
-计算会话级外部暴露和差分隐私预算累计风险。
+Compute session-level exposure and accumulated differential-privacy budget.
 
-请求：
+Request:
 
 ```json
 {
@@ -176,50 +190,11 @@
 }
 ```
 
-响应：
-
-```json
-{
-  "session_id": "session-1",
-  "event_count": 1,
-  "exposure_events": 1,
-  "epsilon_total": 0.5,
-  "risk_score": 1.5,
-  "risk_bound": 5.0,
-  "passed": true
-}
-```
-
-## POST /v1/restore-output
-
-按 `audit_id` 从本地映射日志读取 token 映射，将外部模型输出中的授权 token 复原为原始值。
-
-请求：
-
-```json
-{
-  "audit_id": "00000000-0000-0000-0000-000000000000",
-  "output": "model output with <PERSON_xxx>"
-}
-```
-
-响应：
-
-```json
-{
-  "audit_id": "00000000-0000-0000-0000-000000000000",
-  "restored_output": "model output with original value",
-  "replacements": 1
-}
-```
-
-复原只使用本地 `PROOFGATE_MAPPING_LOG`，不会调用外部模型。
-
 ## POST /v1/model-dispatch
 
-预留的外部模型 adapter 边界。当前默认实现不调用任何模型供应商。
+Reserved model adapter boundary. The default implementation does not call model providers.
 
-请求：
+Request:
 
 ```json
 {
@@ -232,7 +207,7 @@
 }
 ```
 
-响应：
+Response:
 
 ```json
 {

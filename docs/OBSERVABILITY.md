@@ -1,16 +1,17 @@
-# 观测
+# Observability
 
-网关当前内置：
+ProofGate uses structured tracing through `tracing` and `tower-http`.
 
-- `tower_http::trace::TraceLayer` HTTP 请求跟踪。
-- `tracing_subscriber` JSON 日志。
-- `RUST_LOG` / `EnvFilter` 日志级别控制。
+Recommended runtime settings:
 
-OpenTelemetry Collector 样例：
+```bash
+export RUST_LOG=info,proofgate_gateway=debug,tower_http=info
+```
+
+The sample OpenTelemetry Collector configuration is located at:
 
 ```text
 deploy/otel-collector/config.yaml
 ```
 
-当前服务默认输出结构化 JSON 日志，可由运行环境采集。后续如果启用 OTLP exporter，应保持同一原则：trace、log、metric 只能包含外部可见视图 hash、审计 ID、策略版本和验证结果，不得记录原始数据、本地密钥或 token 映射表。
-
+Observability must not expose raw input, token mappings, local keys, API keys, or model input/output traces containing real data.

@@ -1,53 +1,52 @@
-# 文档导航
+# Documentation Map
 
-本文按用途整理项目文档，避免研究文档、工程文档和运行文档混在一起。
+This repository uses English-only documentation. Keep documents concise, reproducible, and explicit about assumptions.
 
-English readers can start with [WHITEPAPER.en.md](WHITEPAPER.en.md), [API.en.md](API.en.md), and [OPEN_SOURCE_RELEASE.md](OPEN_SOURCE_RELEASE.md). The repository README is bilingual.
+## Research and Boundaries
 
-## 研究与边界
-
-| 文档 | 用途 |
+| Document | Purpose |
 |---|---|
-| [WHITEPAPER.md](WHITEPAPER.md) / [WHITEPAPER.en.md](WHITEPAPER.en.md) | 项目主张、数学保证、系统边界和长期范围 |
-| [THREAT_MODEL.md](THREAT_MODEL.md) | 资产、攻击者、攻击面、默认假设和非目标 |
-| [VERIFICATION_MODEL.md](VERIFICATION_MODEL.md) | 隐私证明、效用证明、结构保真和可复算报告模型 |
-| [EVALUATION_PLAN.md](EVALUATION_PLAN.md) | 隐私、效用、复杂数据和自动化评估计划 |
+| [WHITEPAPER.md](WHITEPAPER.md) | Research claim, mathematical model, system boundary, and scope |
+| [THREAT_MODEL.md](THREAT_MODEL.md) | Assets, attackers, attack surfaces, assumptions, and non-goals |
+| [VERIFICATION_MODEL.md](VERIFICATION_MODEL.md) | Privacy checks, utility checks, structural fidelity, and replay |
+| [EVALUATION_PLAN.md](EVALUATION_PLAN.md) | Privacy, utility, complex datasets, and quality gates |
 
-## 当前工程状态
+## Engineering
 
-| 文档 | 用途 |
+| Document | Purpose |
 |---|---|
-| [ROADMAP.md](ROADMAP.md) | 当前已完成能力、非目标和后续增强 |
-| [TECH_STACK.md](TECH_STACK.md) | 当前 Rust 网关、隐私核心、审计和部署技术栈 |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 系统组件、数据流、信任边界和模块职责 |
-| [API.md](API.md) / [API.en.md](API.en.md) | HTTP API、请求响应和接口语义 |
-| [MODEL_ADAPTERS.md](MODEL_ADAPTERS.md) | 外部模型 adapter 边界和默认禁用实现 |
-| [EXTERNAL_API_SIMULATION_TEST.md](EXTERNAL_API_SIMULATION_TEST.md) | 两个外部 API 模拟本地模型和外部模型的实测方法 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Components, data flow, trust boundary, and module ownership |
+| [API.md](API.md) | HTTP endpoints and request/response examples |
+| [TECH_STACK.md](TECH_STACK.md) | Implementation stack and runtime assumptions |
+| [MODEL_ADAPTERS.md](MODEL_ADAPTERS.md) | External model adapter boundary |
+| [ROADMAP.md](ROADMAP.md) | Current capabilities, non-goals, and future work |
 
-## 运行与部署
+## Operation
 
-| 文档 | 用途 |
+| Document | Purpose |
 |---|---|
-| [COMMANDS.md](COMMANDS.md) | 常用开发、构建、运行和接口调用命令 |
-| [LOCAL_DEPENDENCY_CACHE.md](LOCAL_DEPENDENCY_CACHE.md) | 依赖、工具链、构建产物和缓存位置约束 |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Docker Compose 与 Kubernetes 部署 |
-| [SECURITY_OPERATIONS.md](SECURITY_OPERATIONS.md) | 密钥、映射、审计、输出检查和保留策略 |
-| [OBSERVABILITY.md](OBSERVABILITY.md) | JSON tracing 与 OpenTelemetry Collector 样例 |
+| [COMMANDS.md](COMMANDS.md) | Development, build, run, test, and static check commands |
+| [LOCAL_DEPENDENCY_CACHE.md](LOCAL_DEPENDENCY_CACHE.md) | Local dependency and build cache policy |
+| [RUNTIME_ENVIRONMENT.md](RUNTIME_ENVIRONMENT.md) | Linux/container-first runtime assumptions |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Docker Compose and Kubernetes examples |
+| [SECURITY_OPERATIONS.md](SECURITY_OPERATIONS.md) | Key, mapping, audit, and output inspection requirements |
+| [OBSERVABILITY.md](OBSERVABILITY.md) | Tracing and OpenTelemetry samples |
 
-## 验证与交付
+## Evaluation and Community
 
-| 文档 | 用途 |
+| Document | Purpose |
 |---|---|
-| [TEST_PLAN.md](TEST_PLAN.md) | 本地构建、接口、隐私、效用、审计和部署实测流程 |
-| [OPEN_SOURCE_RELEASE.md](OPEN_SOURCE_RELEASE.md) | GitHub 发布内容、排除项、敏感信息检查和检索元信息 |
-| [CONTRIBUTOR_TASKS.md](CONTRIBUTOR_TASKS.md) | 新贡献者任务、模块化共建方向和建议标签 |
-| [RFC_PROCESS.md](RFC_PROCESS.md) | 隐私、策略、报告、adapter 和 benchmark 变更的设计流程 |
-| [rfcs/](rfcs/) | RFC 索引和模板 |
+| [TEST_PLAN.md](TEST_PLAN.md) | Local build, API, privacy, utility, audit, and deployment checks |
+| [EXTERNAL_API_SIMULATION_TEST.md](EXTERNAL_API_SIMULATION_TEST.md) | Synthetic two-model external API simulation |
+| [OPEN_SOURCE_RELEASE.md](OPEN_SOURCE_RELEASE.md) | Release contents, exclusions, and sensitive-data checks |
+| [CONTRIBUTOR_TASKS.md](CONTRIBUTOR_TASKS.md) | Starter tasks and modular contribution areas |
+| [RFC_PROCESS.md](RFC_PROCESS.md) | Design process for privacy, policy, adapter, and benchmark changes |
+| [rfcs/](rfcs/) | RFC index and template |
 
-## 更新规则
+## Maintenance Rules
 
-- 代码接口变更后，同步更新 [API.md](API.md) 和 [TEST_PLAN.md](TEST_PLAN.md)。
-- 策略字段或机制变更后，同步更新 [TECH_STACK.md](TECH_STACK.md)、[VERIFICATION_MODEL.md](VERIFICATION_MODEL.md) 和样例策略。
-- 部署变量变更后，同步更新 [COMMANDS.md](COMMANDS.md)、[DEPLOYMENT.md](DEPLOYMENT.md)、`.env.example` 和 `docker-compose.yml`。
-- 安全边界变更后，同步更新 [THREAT_MODEL.md](THREAT_MODEL.md) 和 [SECURITY_OPERATIONS.md](SECURITY_OPERATIONS.md)。
-- 社区协作流程变更后，同步更新 `CONTRIBUTING.md`、`GOVERNANCE.md`、issue 模板和 PR 模板。
+- API changes must update [API.md](API.md) and [TEST_PLAN.md](TEST_PLAN.md).
+- Policy or mechanism changes must update [TECH_STACK.md](TECH_STACK.md), [VERIFICATION_MODEL.md](VERIFICATION_MODEL.md), and sample policy files.
+- Deployment variable changes must update [COMMANDS.md](COMMANDS.md), [DEPLOYMENT.md](DEPLOYMENT.md), `.env.example`, and `docker-compose.yml`.
+- Trust-boundary changes must update [THREAT_MODEL.md](THREAT_MODEL.md) and [SECURITY_OPERATIONS.md](SECURITY_OPERATIONS.md).
+- Community-process changes must update `CONTRIBUTING.md`, `GOVERNANCE.md`, issue templates, and the PR template.
