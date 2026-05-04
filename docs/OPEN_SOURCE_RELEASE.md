@@ -10,11 +10,12 @@ This document defines what should be published to GitHub and what must stay loca
 - Developer scripts: `scripts/*.sh`, `scripts/*.ps1`.
 - Deployment examples: `Dockerfile`, `docker-compose.yml`, `deploy/`.
 - Documentation: `README.md`, `docs/`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `CITATION.cff`, `LICENSE`.
+- Public synthetic result snapshots: selected `data/complex-text-task-results/*.md` files that carry an explicit synthetic/simulated test-data notice.
 
 ## Do Not Publish
 
 - `.env`, `.env.*` except `.env.example`.
-- `data/`: audit logs, mapping logs, model input/output traces, and evaluation reports.
+- `data/`: audit logs, mapping logs, JSON reports, model input/output traces, and evaluation artifacts, except selected synthetic Markdown result snapshots explicitly listed for publication.
 - `target/`, `.cargo-home/`, `.rustup-home/`, `.cache/`, `__pycache__/`, `*.pyc`, logs, and temporary files.
 - Real datasets, real prompts, production policies, production schemas, customer identifiers, account formats, hostnames, IP ranges, or internal operating procedures.
 - API keys, HMAC keys, bearer tokens, database passwords, SSH keys, cloud credentials, or model-provider credentials.

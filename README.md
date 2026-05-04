@@ -100,7 +100,7 @@ To record full model input/output for a synthetic run:
 ./scripts/run-external-api-simulation.sh --record-model-io --model-retries 3
 ```
 
-The generated `data/` directory is ignored and must not be published.
+Generated data artifacts are ignored by default. Only selected synthetic Markdown reports under `data/complex-text-task-results/*.md` may be published when they carry a public test-data notice. JSON reports, model traces, audit logs, mapping logs, and credentials must stay local.
 
 ## Documentation
 

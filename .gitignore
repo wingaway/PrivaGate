@@ -10,7 +10,10 @@ target/
 *.pdb
 tmp/
 dist/
-data/
+data/*
+!data/complex-text-task-results/
+data/complex-text-task-results/*
+!data/complex-text-task-results/*.md
 __pycache__/
 *.pyc
 .DS_Store
