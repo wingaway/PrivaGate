@@ -7,11 +7,21 @@ required_files=(
   "README.md"
   "LICENSE"
   "CONTRIBUTING.md"
+  "CODE_OF_CONDUCT.md"
+  "GOVERNANCE.md"
   "SECURITY.md"
   "CITATION.cff"
+  ".github/PULL_REQUEST_TEMPLATE.md"
+  ".github/ISSUE_TEMPLATE/bug_report.yml"
+  ".github/ISSUE_TEMPLATE/feature_request.yml"
+  ".github/ISSUE_TEMPLATE/research_question.yml"
+  ".github/ISSUE_TEMPLATE/detector_request.yml"
   "Cargo.toml"
   "config/policy.sample.json"
   "tests/external_api_simulation/dataset.json"
+  "docs/CONTRIBUTOR_TASKS.md"
+  "docs/RFC_PROCESS.md"
+  "docs/rfcs/0000-template.md"
 )
 
 missing=()

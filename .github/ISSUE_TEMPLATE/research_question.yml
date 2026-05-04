@@ -1,0 +1,47 @@
+name: Research Question
+description: Discuss a privacy, utility, threat-model, benchmark, or proof question.
+title: "[Research]: "
+labels: ["research", "needs-rfc"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: State the research or design question precisely.
+    validations:
+      required: true
+  - type: textarea
+    id: assumptions
+    attributes:
+      label: Assumptions
+      description: Threat model, task profile, attacker capability, and local trust boundary.
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: Candidate Claim
+      description: What privacy or utility claim might be possible?
+    validations:
+      required: false
+  - type: textarea
+    id: counterexamples
+    attributes:
+      label: Counterexamples
+      description: Known attacks, failure modes, or cases where the claim does not hold.
+    validations:
+      required: false
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or References
+      description: Papers, benchmarks, experiments, or reproducible synthetic examples.
+    validations:
+      required: false
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data Safety
+      options:
+        - label: I confirm any examples are synthetic or public non-sensitive data.
+          required: true

@@ -1,0 +1,47 @@
+name: Feature Request
+description: Propose a bounded feature or implementation improvement.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user or developer problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the proposed behavior or API.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy Impact
+      description: What becomes local-only, tokenized, generalized, suppressed, or externally visible?
+    validations:
+      required: true
+  - type: textarea
+    id: utility
+    attributes:
+      label: Utility Impact
+      description: What task information is preserved or lost?
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification Plan
+      description: Tests, metrics, synthetic data, or counterexamples.
+    validations:
+      required: true
+  - type: checkboxes
+    id: rfc
+    attributes:
+      label: RFC Check
+      options:
+        - label: This may affect privacy claims, policy schema, report schema, adapters, or benchmark methodology.
+          required: false

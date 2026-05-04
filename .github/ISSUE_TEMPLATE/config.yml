@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Issue
+    url: https://github.com/wingaway/ProofGate/security/policy
+    about: Report suspected leaks, bypasses, or secret exposure privately.
+  - name: Discussions
+    url: https://github.com/wingaway/ProofGate/discussions
+    about: Use discussions for open-ended use cases and community questions.

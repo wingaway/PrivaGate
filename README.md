@@ -130,8 +130,18 @@ The generated `data/` directory is ignored and must not be published.
 | [Evaluation plan / 评估计划](docs/EVALUATION_PLAN.md) | Privacy, utility, complex dataset, and quality gates |
 | [External API simulation / 外部 API 模拟](docs/EXTERNAL_API_SIMULATION_TEST.md) | Synthetic two-model simulation protocol |
 | [Open source release / 开源发布](docs/OPEN_SOURCE_RELEASE.md) | Publish list, exclusion list, sensitive-data scan, and GitHub notes |
+| [Contributor tasks / 贡献任务池](docs/CONTRIBUTOR_TASKS.md) | Good first issues and modular contribution areas |
+| [RFC process / RFC 流程](docs/RFC_PROCESS.md) | Design process for privacy, policy, adapter, and benchmark changes |
 | [Commands / 命令手册](docs/COMMANDS.md) | Development, build, run, test, and static check commands |
 | [Deployment / 部署](docs/DEPLOYMENT.md) | Docker Compose and Kubernetes examples |
+
+## Community / 社区
+
+ProofGate welcomes small, reviewable contributions based on synthetic data and reproducible checks. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [docs/CONTRIBUTOR_TASKS.md](docs/CONTRIBUTOR_TASKS.md).
+
+Changes that affect privacy claims, utility claims, policy schema, report schema, model adapters, or benchmark methodology should follow the [RFC process](docs/RFC_PROCESS.md).
+
+ProofGate 欢迎基于合成数据和可复现检查的小步贡献。影响隐私主张、效用主张、策略 schema、报告 schema、模型 adapter 或 benchmark 方法的变更应先走 RFC。
 
 ## Development Checks / 开发检查
 

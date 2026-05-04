@@ -40,6 +40,9 @@ English readers can start with [WHITEPAPER.en.md](WHITEPAPER.en.md), [API.en.md]
 |---|---|
 | [TEST_PLAN.md](TEST_PLAN.md) | 本地构建、接口、隐私、效用、审计和部署实测流程 |
 | [OPEN_SOURCE_RELEASE.md](OPEN_SOURCE_RELEASE.md) | GitHub 发布内容、排除项、敏感信息检查和检索元信息 |
+| [CONTRIBUTOR_TASKS.md](CONTRIBUTOR_TASKS.md) | 新贡献者任务、模块化共建方向和建议标签 |
+| [RFC_PROCESS.md](RFC_PROCESS.md) | 隐私、策略、报告、adapter 和 benchmark 变更的设计流程 |
+| [rfcs/](rfcs/) | RFC 索引和模板 |
 
 ## 更新规则
 
@@ -47,3 +50,4 @@ English readers can start with [WHITEPAPER.en.md](WHITEPAPER.en.md), [API.en.md]
 - 策略字段或机制变更后，同步更新 [TECH_STACK.md](TECH_STACK.md)、[VERIFICATION_MODEL.md](VERIFICATION_MODEL.md) 和样例策略。
 - 部署变量变更后，同步更新 [COMMANDS.md](COMMANDS.md)、[DEPLOYMENT.md](DEPLOYMENT.md)、`.env.example` 和 `docker-compose.yml`。
 - 安全边界变更后，同步更新 [THREAT_MODEL.md](THREAT_MODEL.md) 和 [SECURITY_OPERATIONS.md](SECURITY_OPERATIONS.md)。
+- 社区协作流程变更后，同步更新 `CONTRIBUTING.md`、`GOVERNANCE.md`、issue 模板和 PR 模板。
