@@ -1,29 +1,30 @@
-# ProofGate
+# PrivaGate
 
-ProofGate is a verifiable redaction gateway for hybrid LLM deployment. It keeps raw data, local mappings, and cryptographic keys inside a local trust boundary, projects inputs into an external-visible view, sends only that view to an external LLM API, and emits reproducible privacy and utility reports.
+PrivaGate is a privacy protection and data desensitization gateway for AI and data-processing workflows. It keeps raw data, local mappings, and cryptographic keys inside a local trust boundary, transforms inputs into an `external_view`, sends only that view across less-trusted boundaries, and emits reproducible privacy and utility reports.
 
-**Keywords:** privacy-preserving LLM, verifiable redaction, data desensitization, hybrid LLM deployment, local model, external LLM API, tokenization, differential privacy, auditability, PII redaction.
+**Keywords:** privacy-preserving AI, data desensitization, privacy protection, leakage risk control, tokenization, differential privacy, auditability, local trust boundary, PII redaction, Rust gateway.
 
-Suggested GitHub topics: `llm`, `privacy`, `redaction`, `tokenization`, `data-privacy`, `privacy-preserving`, `hybrid-llm`, `pii-redaction`, `rust`, `axum`.
+Suggested GitHub topics: `privacy`, `data-privacy`, `privacy-preserving`, `pii-redaction`, `tokenization`, `auditability`, `llm`, `ai-security`, `rust`, `axum`.
 
 ## Research Question
 
-ProofGate studies two verifiable questions:
+PrivaGate studies three verifiable questions:
 
-1. **Redaction effectiveness.** Under an explicit threat model, does the external-visible view remove, replace, or generalize protected values so that direct recovery is blocked?
-2. **Information utility.** Under an explicit task profile, does the projected view preserve the fields, relations, events, counts, and labels required by the downstream task?
+1. **Desensitization effectiveness.** Under an explicit policy, are protected values transformed before data crosses the local trust boundary?
+2. **Privacy effectiveness.** Under an explicit threat model, can a downstream observer recover, link, or infer sensitive values without local keys and mapping tables?
+3. **Minimum utility preservation.** Under an explicit task profile, does the `external_view` preserve the fields, relations, events, counts, and labels required by the downstream task?
 
-These goals are not unconditional. ProofGate treats each request as a privacy-utility projection problem and emits reproducible evidence rather than relying on model self-assessment.
+These goals are not unconditional. A task that requires exact sensitive values externally may be incompatible with strong privacy protection. PrivaGate therefore treats each request as a policy-bound privacy and utility trade-off and records machine-readable evidence.
 
 ## Workflow
 
 ```text
 raw input
   -> local auxiliary model or local detectors
-  -> ProofGate projection
+  -> PrivaGate projection
   -> optional manual review gate
-  -> external-visible view + proof reports
-  -> external LLM API
+  -> external view + proof reports
+  -> optional model, tool, RAG, analytics, or API dispatch
   -> output inspection
   -> optional local token restoration
   -> audit replay
@@ -31,10 +32,10 @@ raw input
 
 ## What Is Included
 
-- `proofgate-core`: HMAC tokenization, field projection, text detectors, hash binding, privacy reports, utility reports, and verification helpers.
-- `proofgate-gateway`: Rust + axum HTTP gateway with projection, output inspection, restoration, statistics, RAG chunk projection, and a reserved model adapter boundary.
+- `privagate-core`: HMAC tokenization, field projection, text detectors, hash binding, privacy reports, utility reports, and verification helpers.
+- `privagate-gateway`: Rust + axum HTTP gateway with projection, output inspection, restoration, statistics, RAG chunk projection, tool inspection, session risk checks, manual review, route planning, shard execution, promotion binding, and a reserved model adapter boundary.
 - `config/policy.sample.json`: synthetic policy sample for Chinese and English identifier formats.
-- `examples/`: minimal JSON requests.
+- `examples/`: minimal JSON requests for projection, staged routing, shard execution, and promotion binding.
 - `tests/external_api_simulation/`: synthetic-only evaluation dataset and external API simulation runner.
 - `docs/`: whitepaper, architecture, threat model, verification model, API, deployment, evaluation, release, and community documentation.
 - `Dockerfile`, `docker-compose.yml`, and `deploy/`: container and Kubernetes examples.
@@ -47,18 +48,18 @@ Linux or container-oriented development:
 
 ```bash
 source ./scripts/dev-env.sh
-export PROOFGATE_HMAC_KEY="replace-with-local-test-secret"
+export PRIVAGATE_HMAC_KEY="replace-with-local-test-secret"
 ./scripts/cargo.sh test
-./scripts/cargo.sh run -p proofgate-gateway
+./scripts/cargo.sh run -p privagate-gateway
 ```
 
 Windows local development:
 
 ```powershell
 .\scripts\dev-env.ps1
-$env:PROOFGATE_HMAC_KEY="replace-with-local-test-secret"
+$env:PRIVAGATE_HMAC_KEY="replace-with-local-test-secret"
 .\scripts\cargo.ps1 test
-.\scripts\cargo.ps1 run -p proofgate-gateway
+.\scripts\cargo.ps1 run -p privagate-gateway
 ```
 
 Example request:
@@ -71,8 +72,8 @@ curl -sS http://127.0.0.1:8080/v1/project \
 
 The response contains:
 
-- `external_view`: the view that may be sent to an external model.
-- `privacy_report`: checks for replacement, removal, generalization, and digest binding.
+- `external_view`: the boundary-crossing view that may leave the local trust boundary.
+- `privacy_report`: checks for replacement, removal, generalization, leakage notes, and digest binding.
 - `utility_report`: checks for required task fields and structural constraints.
 - `audit_summary`: replayable identifiers and digests.
 
@@ -105,19 +106,20 @@ Generated data artifacts are ignored by default. Only selected synthetic Markdow
 
 ## Manual Review Mode
 
-Set `PROOFGATE_REVIEW_MODE=manual` when projected data must be approved by a human before external dispatch. In this mode `/v1/project` returns `manual_review.status="pending"` and `audit_summary.blocked=true`; `/v1/model-dispatch` blocks until `/v1/review/approve` approves the same `audit_id` and `external_view_digest`.
+Set `PRIVAGATE_REVIEW_MODE=manual` when projected data must be approved by a human before external dispatch. In this mode `/v1/project` returns `manual_review.status="pending"` and `audit_summary.blocked=true`; `/v1/model-dispatch` blocks until `/v1/review/approve` approves the same `audit_id` and `external_view_digest`.
 
 ## Documentation
 
 | Document | Purpose |
 |---|---|
-| [Whitepaper](docs/WHITEPAPER.md) | Research claim, mathematical model, system boundary, and scope |
+| [Whitepaper](docs/WHITEPAPER.md) | Goal hierarchy, mathematical model, system boundary, and scope |
 | [Documentation Map](docs/DOCUMENTATION.md) | Document groups and maintenance rules |
 | [Architecture](docs/ARCHITECTURE.md) | Components, data flow, trust boundary, and module ownership |
 | [Threat Model](docs/THREAT_MODEL.md) | Assets, attackers, attack surfaces, assumptions, and non-goals |
 | [Verification Model](docs/VERIFICATION_MODEL.md) | Privacy checks, utility checks, structural fidelity, and replay |
 | [API](docs/API.md) | Gateway endpoints and request/response examples |
-| [Evaluation Plan](docs/EVALUATION_PLAN.md) | Privacy, utility, complex dataset, and quality gates |
+| [Roadmap](docs/ROADMAP.md) | Implemented 2.x slices, next delivery track, and research extensions |
+| [Evaluation Plan](docs/EVALUATION_PLAN.md) | Privacy-first evaluation, utility checks, and quality gates |
 | [External API Simulation](docs/EXTERNAL_API_SIMULATION_TEST.md) | Synthetic two-model simulation protocol |
 | [Open Source Release](docs/OPEN_SOURCE_RELEASE.md) | Publish list, exclusion list, sensitive-data scan, and GitHub notes |
 | [Contributor Tasks](docs/CONTRIBUTOR_TASKS.md) | Good first issues and modular contribution areas |
@@ -127,7 +129,7 @@ Set `PROOFGATE_REVIEW_MODE=manual` when projected data must be approved by a hum
 
 ## Community
 
-ProofGate welcomes small, reviewable contributions based on synthetic data and reproducible checks. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [docs/CONTRIBUTOR_TASKS.md](docs/CONTRIBUTOR_TASKS.md).
+PrivaGate welcomes small, reviewable contributions based on synthetic data and reproducible checks. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [GOVERNANCE.md](GOVERNANCE.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [docs/CONTRIBUTOR_TASKS.md](docs/CONTRIBUTOR_TASKS.md).
 
 Changes that affect privacy claims, utility claims, policy schema, report schema, model adapters, or benchmark methodology should follow the [RFC process](docs/RFC_PROCESS.md).
 
@@ -151,7 +153,7 @@ source ./scripts/dev-env.sh
 
 ## Scope
 
-ProofGate is a research prototype and engineering scaffold. It provides reproducible checks under explicit policies and threat assumptions. It does not claim that every downstream inference risk is eliminated, and it does not replace domain review, deployment hardening, or manual release review.
+PrivaGate is a research prototype and engineering scaffold. It provides reproducible checks under explicit policies and threat assumptions. It does not claim that every downstream inference risk is eliminated, and it does not replace domain review, deployment hardening, or manual release review.
 
 ## Citation and License
 

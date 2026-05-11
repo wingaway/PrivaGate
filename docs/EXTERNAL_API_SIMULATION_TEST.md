@@ -76,9 +76,9 @@ Optional full synthetic model I/O trace:
 ./scripts/run-external-api-simulation.sh --record-model-io --model-retries 3
 ```
 
-The script builds and starts `proofgate-gateway` automatically when the gateway is not already healthy.
+The script builds and starts `privagate-gateway` automatically when the gateway is not already healthy.
 
-When `PROOFGATE_REVIEW_MODE=manual`, the runner calls `/v1/review/approve` after projection and before the external-model request. The approval reason is synthetic-test specific and the report records the manual review state. API keys and Authorization headers are never written.
+When `PRIVAGATE_REVIEW_MODE=manual`, the runner calls `/v1/review/approve` after projection and before the external-model request. The approval reason is synthetic-test specific and the report records the manual review state. API keys and Authorization headers are never written.
 
 ## Flow
 

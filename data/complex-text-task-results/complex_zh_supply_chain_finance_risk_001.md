@@ -1,6 +1,6 @@
 # Complex Text Task Report: complex_zh_supply_chain_finance_risk_001
 
-> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, business events, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating ProofGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.
+> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, business events, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating PrivaGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.
 
 ## Test Task
 
@@ -53,7 +53,7 @@
 | `发票验真` | Required for supply-chain finance risk review |
 | `资金用途说明` | Required for supply-chain finance risk review |
 
-## ProofGate Projection
+## PrivaGate Projection
 
 - Audit ID: `14b7944b-2213-4024-9774-1e3a3d7c3e7d`
 - Input digest: `sha256:1ff12ef693138b2af2af5ffc630e81fd9d92b98e14747c8d5a0bd29cb488ac1b`
@@ -98,168 +98,168 @@
       "field_name": "bank_card",
       "field_type": "bank_card",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "bank_card",
       "field_type": "bank_card",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "business_registration_id",
       "field_type": "registration_id",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "company_name",
       "field_type": "organization",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "company_name",
       "field_type": "organization",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "company_name",
       "field_type": "organization",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "company_name",
       "field_type": "organization",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contract_id",
       "field_type": "contract",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "email",
       "field_type": "email",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "id_card",
       "field_type": "national_id",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "invoice_id",
       "field_type": "invoice",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "license_plate",
       "field_type": "license_plate",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "logistics_id",
       "field_type": "logistics",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "order_id",
       "field_type": "order",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "phone",
       "field_type": "phone",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "phone",
       "field_type": "phone",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "phone",
       "field_type": "phone",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "phone",
       "field_type": "phone",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     }
   ],
@@ -394,7 +394,7 @@
   "messages": [
     {
       "role": "system",
-      "content": "You are a supply-chain finance risk review expert. You will receive only a ProofGate external_view. Produce a professional Chinese risk review memo. Preserve business type, subject roles, event timeline, risk facts, evidence gaps, recommended due-diligence materials, and conclusion. Do not infer, reconstruct, or restore tokenized, generalized, or suppressed sensitive values. Keep token markers unchanged when referring to tokenized entities."
+      "content": "You are a supply-chain finance risk review expert. You will receive only a PrivaGate external_view. Produce a professional Chinese risk review memo. Preserve business type, subject roles, event timeline, risk facts, evidence gaps, recommended due-diligence materials, and conclusion. Do not infer, reconstruct, or restore tokenized, generalized, or suppressed sensitive values. Keep token markers unchanged when referring to tokenized entities."
     },
     {
       "role": "user",

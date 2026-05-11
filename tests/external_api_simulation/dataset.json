@@ -1,6 +1,6 @@
 {
   "dataset_version": "2026.05.04-rich-synthetic-v1",
-  "description": "Synthetic-only dataset for ProofGate external API simulation. Do not replace these cases with real customer, patient, employee, account, or contract data.",
+  "description": "Synthetic-only dataset for PrivaGate external API simulation. Do not replace these cases with real customer, patient, employee, account, or contract data.",
   "cases": [
     {
       "case_id": "contract_case_001",

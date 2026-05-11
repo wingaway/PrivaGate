@@ -810,16 +810,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "proc-macro2"
-version = "1.0.106"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
-dependencies = [
- "unicode-ident",
-]
-
-[[package]]
-name = "proofgate-core"
+name = "privagate-core"
 version = "0.1.0"
 dependencies = [
  "chrono",
@@ -834,13 +825,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "proofgate-gateway"
+name = "privagate-gateway"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
  "chrono",
- "proofgate-core",
+ "privagate-core",
  "serde",
  "serde_json",
  "tokio",
@@ -849,6 +840,15 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+]
+
+[[package]]
+name = "proc-macro2"
+version = "1.0.106"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fd00f0bb2e90d81d1044c2b32617f68fcb9fa3bb7640c23e9c748e53fb30934"
+dependencies = [
+ "unicode-ident",
 ]
 
 [[package]]

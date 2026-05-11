@@ -2,7 +2,7 @@
 
 ## Secrets
 
-`PROOFGATE_HMAC_KEY` is a local secret. Rotate it according to deployment policy. A key change breaks deterministic token compatibility unless mappings are migrated intentionally.
+`PRIVAGATE_HMAC_KEY` is a local secret. Rotate it according to deployment policy. A key change breaks deterministic token compatibility unless mappings are migrated intentionally.
 
 Never commit:
 
@@ -16,11 +16,11 @@ Never commit:
 
 ## Mapping Log
 
-`PROOFGATE_MAPPING_LOG` may contain original values and must be encrypted at rest, access-controlled, and retained only as long as needed for inspection and restoration.
+`PRIVAGATE_MAPPING_LOG` may contain original values and must be encrypted at rest, access-controlled, and retained only as long as needed for inspection and restoration.
 
 ## Audit Log
 
-`PROOFGATE_AUDIT_LOG` stores replayable summaries and verification records. `PROOFGATE_AUDIT_POSTGRES_URL` enables the PostgreSQL append-only table `proofgate_audit_log`.
+`PRIVAGATE_AUDIT_LOG` stores replayable summaries and verification records. `PRIVAGATE_AUDIT_POSTGRES_URL` enables the PostgreSQL append-only table `privagate_audit_log`.
 
 ## Output Inspection
 
@@ -28,7 +28,7 @@ External model output should be checked with `/v1/inspect-output` before downstr
 
 ## Manual Review
 
-Set `PROOFGATE_REVIEW_MODE=manual` when projected data must be approved by a human before external dispatch.
+Set `PRIVAGATE_REVIEW_MODE=manual` when projected data must be approved by a human before external dispatch.
 
 Operational requirements:
 
@@ -40,4 +40,4 @@ Operational requirements:
 
 ## Operational Rule
 
-If a workflow requires exact sensitive values at the external model, it is outside ProofGate's intended trust model and should be handled locally.
+If a workflow requires exact sensitive values at the external model, it is outside PrivaGate's intended trust model and should be handled locally.

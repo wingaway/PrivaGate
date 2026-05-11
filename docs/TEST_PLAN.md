@@ -9,7 +9,7 @@ source ./scripts/dev-env.sh
 ./scripts/cargo.sh fmt --all -- --check
 ./scripts/cargo.sh test
 ./scripts/cargo.sh clippy --all-targets -- -D warnings
-./scripts/cargo.sh build --release -p proofgate-gateway
+./scripts/cargo.sh build --release -p privagate-gateway
 ```
 
 Windows:
@@ -19,7 +19,7 @@ Windows:
 .\scripts\cargo.ps1 fmt --all -- --check
 .\scripts\cargo.ps1 test
 .\scripts\cargo.ps1 clippy --all-targets -- -D warnings
-.\scripts\cargo.ps1 build --release -p proofgate-gateway
+.\scripts\cargo.ps1 build --release -p privagate-gateway
 ```
 
 Expected result: formatting passes, tests pass, clippy has no warnings, and release build succeeds.
@@ -29,8 +29,8 @@ Expected result: formatting passes, tests pass, clippy has no warnings, and rele
 Start the gateway:
 
 ```bash
-export PROOFGATE_HMAC_KEY="replace-with-local-secret"
-./scripts/cargo.sh run -p proofgate-gateway
+export PRIVAGATE_HMAC_KEY="replace-with-local-secret"
+./scripts/cargo.sh run -p privagate-gateway
 ```
 
 Check health:
@@ -53,6 +53,7 @@ Expected result:
 - `privacy_report.verification_results[*].passed` is true.
 - `utility_report.constraint_results[*].passed` is true when constraints are applicable.
 - `audit_summary.input_digest` and `audit_summary.external_view_digest` are present.
+- `task_contract_assessment` reflects the requested or default task profile.
 
 ## Output Inspection
 
@@ -81,8 +82,8 @@ Expected result: authorized tokens are restored locally. Restoration must not ca
 Start the gateway with manual review enabled:
 
 ```bash
-export PROOFGATE_REVIEW_MODE=manual
-./scripts/cargo.sh run -p proofgate-gateway
+export PRIVAGATE_REVIEW_MODE=manual
+./scripts/cargo.sh run -p privagate-gateway
 ```
 
 Project a synthetic request. Expected result:
@@ -102,6 +103,73 @@ curl -sS http://127.0.0.1:8080/v1/review/approve \
 ```
 
 Expected result: `/v1/model-dispatch` is no longer blocked by the manual review gate when the dispatch request carries the same `audit_id` and unchanged `external_view` digest. A modified external view must still be blocked by digest mismatch.
+
+## Route-Plan Validation
+
+Call `/v1/route-plan/validate` with `examples/route-plan-request.json`.
+
+Expected result:
+
+- every stage includes `external_view_digest`;
+- `task_contract_assessment` is present for each stage;
+- `dispatch_allowed` becomes false when review, task-contract, or adapter-class checks fail;
+- a local `route_plan_evidence` audit event is emitted.
+
+## Route-Plan Execution
+
+Start the gateway with `PRIVAGATE_MODEL_ADAPTER=dry_run` and call `/v1/route-plan/execute` with `examples/route-plan-execute-request.json`.
+
+Expected result:
+
+- runtime adapter capability is returned in `runtime_adapter_capabilities`;
+- every executed stage returns `dispatch_response`;
+- `stop_on_block=true` halts later stages after the first blocked or non-dispatched stage;
+- a local `route_plan_evidence` audit event with execution outcome is emitted.
+
+## Shard-Plan Validation
+
+Call `/v1/shard-plan/validate` with `examples/shard-plan-request.json`.
+
+Expected result:
+
+- route-plan checks still apply to every stage;
+- `local_aggregation_summary` reports shard completeness and missing-group issues;
+- promotion readiness appears only as aggregation-rule assessment, not as a materialized follow-up view;
+- a local `shard_plan_evidence` audit event is emitted.
+
+## Shard-Plan Execution and Local Aggregation
+
+Start the gateway with `PRIVAGATE_MODEL_ADAPTER=dry_run` and call `/v1/shard-plan/execute` with `examples/shard-plan-execute-request.json` or `examples/shard-plan-promote-request.json`.
+
+Expected result:
+
+- complete shard groups receive `local_aggregation_digest`;
+- non-`digest_only` strategies emit `local_only_output` and `local_only_output_digest`;
+- promotion candidates appear only when aggregation rules and task contracts allow them;
+- `promotion.utility_assessment` reflects required-field and optional structural utility checks for the follow-up task profile;
+- a local `shard_plan_evidence` audit event with execution details is emitted.
+
+## Promotion Binding
+
+Call `/v1/shard-plan/bind-promotion` using shard execution output plus `group_id="claims"`.
+
+Expected result:
+
+- replay verification rejects inconsistent or tampered shard execution evidence;
+- `binding_created=true` creates a new follow-up `audit_id`, `audit_summary`, and `external_view`;
+- when `PRIVAGATE_REVIEW_MODE=manual`, the new binding also creates a pending `manual_review` record;
+- `binding_created=false` when promotion utility verification fails or dispatch-output digests do not match;
+- a local `promotion_binding_evidence` audit event is emitted.
+
+## Follow-Up Utility Gate Outcomes
+
+Run at least one positive and one negative promotion case.
+
+Expected result:
+
+- a valid follow-up candidate preserves the required fields or structural constraints declared by the follow-up task profile;
+- a failing candidate keeps `promotion.utility_assessment` for diagnosis but does not create a reusable binding;
+- task-profile-specific `promotion_utility` policy rules are honored even when request-level promotion verification is minimal.
 
 ## Differential Privacy Statistics
 
@@ -145,6 +213,7 @@ Expected result:
 - all synthetic cases pass;
 - external raw-value echo count is zero;
 - utility score meets the configured threshold;
+- route or shard follow-up tests using dry-run adapters keep raw-value echo count at zero as well;
 - reports are written under ignored `data/`.
 
 ## Release Gate

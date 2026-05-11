@@ -1,6 +1,6 @@
 # RFC Process
 
-RFCs are used for changes that affect ProofGate's privacy boundary, public policy format, report semantics, external model adapters, or benchmark methodology.
+RFCs are used for changes that affect PrivaGate's privacy boundary, public policy format, report semantics, external model adapters, or benchmark methodology.
 
 Use an RFC when a change:
 

@@ -1,6 +1,6 @@
 # Governance
 
-ProofGate uses a lightweight maintainer model until the contributor base grows.
+PrivaGate uses a lightweight maintainer model until the contributor base grows.
 
 ## Roles
 

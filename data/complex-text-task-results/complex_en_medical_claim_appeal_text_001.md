@@ -1,6 +1,6 @@
 # Complex Text Task Report: complex_en_medical_claim_appeal_text_001
 
-> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, medical facts, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating ProofGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.
+> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, medical facts, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating PrivaGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.
 
 ## Test Task
 
@@ -50,7 +50,7 @@ The appeal letter lists the member's date of birth as 1979-11-24, home address a
 | `38000 USD` | Required for healthcare claim appeal review |
 | `recommended next action` | Required for healthcare claim appeal review |
 
-## ProofGate Projection
+## PrivaGate Projection
 
 - Audit ID: `3cd34aa3-527b-43b5-9f42-a8d3c7179b52`
 - Input digest: `sha256:0994ff9a156590977817178bd868bcb9f4c7575a73e68018d390dd3aeb7abb32`
@@ -95,28 +95,28 @@ The appeal letter lists the member's date of birth as 1979-11-24, home address a
       "field_name": "claim_id",
       "field_type": "claim",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "company_name",
       "field_type": "organization",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "contact_name",
       "field_type": "person",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
@@ -130,35 +130,35 @@ The appeal letter lists the member's date of birth as 1979-11-24, home address a
       "field_name": "email",
       "field_type": "email",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "medical_record_id",
       "field_type": "medical_record",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "member_id",
       "field_type": "member",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "phone",
       "field_type": "phone",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     },
     {
       "field_name": "policy_id",
       "field_type": "policy",
       "mechanism": "hmac_token",
-      "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+      "key_domain": "local-kms/privagate-gateway/hmac/v1",
       "token_count": 1
     }
   ],
@@ -293,7 +293,7 @@ The appeal letter lists the member's date of birth as 1979-11-24, home address a
   "messages": [
     {
       "role": "system",
-      "content": "You are a healthcare claim appeal reviewer. You will receive only a ProofGate external_view. Produce a professional claim-review memo. Preserve clinical context, administrative context, denial rationale, evidence conflict, claim amount bucket, and recommended next actions. Do not infer, reconstruct, or restore tokenized, generalized, or suppressed sensitive values. Keep token markers unchanged when referring to tokenized entities."
+      "content": "You are a healthcare claim appeal reviewer. You will receive only a PrivaGate external_view. Produce a professional claim-review memo. Preserve clinical context, administrative context, denial rationale, evidence conflict, claim amount bucket, and recommended next actions. Do not infer, reconstruct, or restore tokenized, generalized, or suppressed sensitive values. Keep token markers unchanged when referring to tokenized entities."
     },
     {
       "role": "user",

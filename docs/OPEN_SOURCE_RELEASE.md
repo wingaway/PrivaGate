@@ -10,7 +10,7 @@ This document defines what should be published to GitHub and what must stay loca
 - Developer scripts: `scripts/*.sh`, `scripts/*.ps1`.
 - Deployment examples: `Dockerfile`, `docker-compose.yml`, `deploy/`.
 - Documentation: `README.md`, `docs/`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `GOVERNANCE.md`, `CITATION.cff`, `LICENSE`.
-- Public synthetic result snapshots: selected `data/complex-text-task-results/*.md` files that carry an explicit synthetic/simulated test-data notice.
+- Public synthetic result snapshots: selected `data/complex-text-task-results/*.md` files that carry an explicit synthetic or simulated test-data notice.
 
 ## Do Not Publish
 
@@ -45,12 +45,12 @@ Windows:
 Recommended repository description:
 
 ```text
-Verifiable redaction gateway for hybrid local LLM and external API deployment.
+Privacy protection and data desensitization gateway for AI and data-processing workflows.
 ```
 
 Recommended topics:
 
 ```text
-llm, privacy, redaction, tokenization, data-privacy, privacy-preserving,
-hybrid-llm, pii-redaction, rust, axum
+privacy, data-privacy, privacy-preserving, pii-redaction, tokenization,
+auditability, llm, ai-security, rust, axum
 ```

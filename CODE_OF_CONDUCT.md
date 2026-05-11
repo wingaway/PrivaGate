@@ -1,6 +1,6 @@
 # Code of Conduct
 
-ProofGate is a research and engineering community for verifiable redaction in hybrid LLM deployment. The community should be rigorous, reproducible, and welcoming to contributors from software engineering, security, privacy research, data governance, and applied AI.
+PrivaGate is a research and engineering community for privacy protection and data desensitization in AI and data-processing workflows. The community should be rigorous, reproducible, and welcoming to contributors from software engineering, security, privacy research, data governance, and applied AI.
 
 Expected behavior:
 

@@ -22,7 +22,7 @@ pub struct GatewayInput {
     pub payload: Value,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ContentType {
     Text,
@@ -131,7 +131,7 @@ pub fn process_document(
             .iter()
             .map(statistical_error_bound)
             .collect(),
-        task_loss_bounds: Vec::new(),
+        task_loss_bounds: task_loss_bounds(policy),
     };
 
     let audit_summary = AuditSummary {
@@ -226,7 +226,22 @@ fn transform_object(
                     });
                     out.insert(field_name, Value::String(token));
                 }
+                Mechanism::LocalOnly => {
+                    state
+                        .original_direct_identifiers
+                        .push(scalar_to_string(&value));
+                    state.mechanism_evidence.push(MechanismEvidence {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        mechanism: "local_only".to_string(),
+                        key_domain: None,
+                        token_count: 0,
+                    });
+                }
                 Mechanism::Suppress => {
+                    state
+                        .original_direct_identifiers
+                        .push(scalar_to_string(&value));
                     state.mechanism_evidence.push(MechanismEvidence {
                         field_name: field_name.clone(),
                         field_type: field_policy.field_type.clone(),
@@ -438,6 +453,16 @@ fn transform_text(text: &str, policy: &Policy, key: &[u8], state: &mut Transform
                     });
                     output = output.replace(&raw, "[SUPPRESSED]");
                 }
+                Mechanism::LocalOnly => {
+                    state.mechanism_evidence.push(MechanismEvidence {
+                        field_name: field_name.clone(),
+                        field_type: field_policy.field_type.clone(),
+                        mechanism: "local_only".to_string(),
+                        key_domain: None,
+                        token_count: 0,
+                    });
+                    output = output.replace(&raw, "[LOCAL_ONLY]");
+                }
                 Mechanism::Passthrough | Mechanism::RelativeTime | Mechanism::NumberBucket => {}
             }
         }
@@ -590,6 +615,14 @@ fn privacy_budget(policy: &Policy) -> PrivacyBudget {
     }
 }
 
+fn task_loss_bounds(policy: &Policy) -> Vec<String> {
+    policy
+        .task_contract_issues(&policy.task_profile)
+        .into_iter()
+        .map(|issue| issue.details)
+        .collect()
+}
+
 fn constraint_results(payload: &Value, policy: &Policy) -> Vec<VerificationResult> {
     let mut results = Vec::new();
 
@@ -660,6 +693,7 @@ mod tests {
             task_profile: "contract_review".to_string(),
             key_domain: "local/test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy {
                 preserve_relations: true,
                 preserve_time_order: false,
@@ -717,6 +751,7 @@ mod tests {
             task_profile: "support_reply".to_string(),
             key_domain: "local/test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy::default(),
             statistics: Vec::new(),
         };
@@ -757,6 +792,7 @@ mod tests {
             task_profile: "support_reply".to_string(),
             key_domain: "local/test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy::default(),
             statistics: Vec::new(),
         };
@@ -819,6 +855,7 @@ mod tests {
             task_profile: "supply_chain_finance_risk_review".to_string(),
             key_domain: "test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy::default(),
             statistics: vec![],
         };
@@ -897,6 +934,7 @@ mod tests {
             task_profile: "healthcare_claim_review".to_string(),
             key_domain: "test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy::default(),
             statistics: vec![],
         };
@@ -954,6 +992,7 @@ mod tests {
             task_profile: "address_review".to_string(),
             key_domain: "local/test".to_string(),
             fields,
+            task_contracts: BTreeMap::new(),
             constraints: ConstraintPolicy::default(),
             statistics: Vec::new(),
         };
@@ -968,5 +1007,134 @@ mod tests {
         assert!(!json.contains("100 Market St"));
         assert!(!json.contains("94105"));
         assert!(json.contains("San Francisco, CA"));
+    }
+
+    #[test]
+    fn process_json_omits_local_only_field() {
+        let mut fields = BTreeMap::new();
+        fields.insert(
+            "internal_case_notes".to_string(),
+            FieldPolicy {
+                field_type: "secret".to_string(),
+                mechanism: Mechanism::LocalOnly,
+                preserve_equality: false,
+                required_for_task: false,
+                bucket_size: None,
+                address_level: None,
+            },
+        );
+        let policy = Policy {
+            policy_version: "test".to_string(),
+            task_profile: "boundary_hardening".to_string(),
+            key_domain: "local/test".to_string(),
+            fields,
+            task_contracts: BTreeMap::new(),
+            constraints: ConstraintPolicy::default(),
+            statistics: Vec::new(),
+        };
+        let input = GatewayInput {
+            content_type: ContentType::Json,
+            payload: serde_json::json!({
+                "internal_case_notes": "synthetic-escalation-note",
+                "role": "reviewer"
+            }),
+        };
+
+        let output = process_document(input, &policy, b"secret").unwrap();
+        let json = serde_json::to_string(&output.external_view).unwrap();
+        assert!(!json.contains("internal_case_notes"));
+        assert!(!json.contains("synthetic-escalation-note"));
+        assert!(output.local_mappings.is_empty());
+        assert!(output
+            .privacy_report
+            .mechanisms
+            .iter()
+            .any(|entry| entry.mechanism == "local_only"));
+    }
+
+    #[test]
+    fn process_text_replaces_local_only_secret() {
+        let mut fields = BTreeMap::new();
+        fields.insert(
+            "internal_case_notes".to_string(),
+            FieldPolicy {
+                field_type: "secret".to_string(),
+                mechanism: Mechanism::LocalOnly,
+                preserve_equality: false,
+                required_for_task: false,
+                bucket_size: None,
+                address_level: None,
+            },
+        );
+        let policy = Policy {
+            policy_version: "test".to_string(),
+            task_profile: "boundary_hardening".to_string(),
+            key_domain: "local/test".to_string(),
+            fields,
+            task_contracts: BTreeMap::new(),
+            constraints: ConstraintPolicy::default(),
+            statistics: Vec::new(),
+        };
+        let input = GatewayInput {
+            content_type: ContentType::Text,
+            payload: Value::String(
+                "Preserve summary only. synthetic-escalation-note: hold-release pending."
+                    .to_string(),
+            ),
+        };
+
+        let output = process_document(input, &policy, b"secret").unwrap();
+        let json = serde_json::to_string(&output.external_view).unwrap();
+        assert!(!json.contains("synthetic-escalation-note"));
+        assert!(json.contains("[LOCAL_ONLY]"));
+        assert!(output.local_mappings.is_empty());
+        assert!(output.privacy_report.verification_results[0].passed);
+    }
+
+    #[test]
+    fn process_document_reports_task_contract_conflict_for_local_only_field() {
+        let mut fields = BTreeMap::new();
+        fields.insert(
+            "internal_case_notes".to_string(),
+            FieldPolicy {
+                field_type: "secret".to_string(),
+                mechanism: Mechanism::LocalOnly,
+                preserve_equality: false,
+                required_for_task: false,
+                bucket_size: None,
+                address_level: None,
+            },
+        );
+        let mut task_contracts = BTreeMap::new();
+        task_contracts.insert(
+            "internal_case_note_triage".to_string(),
+            crate::policy::TaskContract {
+                required_fields: vec!["internal_case_notes".to_string()],
+                allowed_adapter_classes: Vec::new(),
+                promotion_utility: crate::policy::PromotionUtilityProfile::default(),
+            },
+        );
+        let policy = Policy {
+            policy_version: "test".to_string(),
+            task_profile: "internal_case_note_triage".to_string(),
+            key_domain: "local/test".to_string(),
+            fields,
+            task_contracts,
+            constraints: ConstraintPolicy::default(),
+            statistics: Vec::new(),
+        };
+        let input = GatewayInput {
+            content_type: ContentType::Json,
+            payload: serde_json::json!({
+                "internal_case_notes": "synthetic-escalation-note"
+            }),
+        };
+
+        let output = process_document(input, &policy, b"secret").unwrap();
+        assert!(output
+            .utility_report
+            .task_loss_bounds
+            .iter()
+            .any(|entry| entry.contains("local_only")));
     }
 }

@@ -1,6 +1,6 @@
 # Security Policy
 
-ProofGate is designed to reduce the information sent from a local trust boundary to an external LLM API. It does not make external providers trustworthy, and it does not make unsafe data handling safe by itself.
+PrivaGate is designed to reduce the sensitive information sent from a local trust boundary to less-trusted downstream systems. It does not make external providers trustworthy, and it does not make unsafe data handling safe by itself.
 
 Please report security issues privately to the repository maintainers. Do not open public issues for suspected leaks, bypasses, secret exposure, or real-data incidents.
 

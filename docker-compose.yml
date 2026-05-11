@@ -1,16 +1,16 @@
 services:
-  proofgate-gateway:
+  privagate-gateway:
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      PROOFGATE_BIND: 0.0.0.0:8080
-      PROOFGATE_POLICY_PATH: /app/config/policy.sample.json
-      PROOFGATE_MAPPING_LOG: /app/data/local-mappings.jsonl
-      PROOFGATE_AUDIT_LOG: /app/data/audit.jsonl
-      PROOFGATE_AUDIT_POSTGRES_URL: ${PROOFGATE_AUDIT_POSTGRES_URL:-}
-      PROOFGATE_REVIEW_MODE: ${PROOFGATE_REVIEW_MODE:-off}
-      PROOFGATE_HMAC_KEY: ${PROOFGATE_HMAC_KEY:?set local secret}
+      PRIVAGATE_BIND: 0.0.0.0:8080
+      PRIVAGATE_POLICY_PATH: /app/config/policy.sample.json
+      PRIVAGATE_MAPPING_LOG: /app/data/local-mappings.jsonl
+      PRIVAGATE_AUDIT_LOG: /app/data/audit.jsonl
+      PRIVAGATE_AUDIT_POSTGRES_URL: ${PRIVAGATE_AUDIT_POSTGRES_URL:-}
+      PRIVAGATE_REVIEW_MODE: ${PRIVAGATE_REVIEW_MODE:-off}
+      PRIVAGATE_HMAC_KEY: ${PRIVAGATE_HMAC_KEY:?set local secret}
       CARGO_HOME: /workspace/.cargo-home
       CARGO_TARGET_DIR: /workspace/target
     ports:

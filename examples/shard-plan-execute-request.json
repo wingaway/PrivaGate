@@ -1,0 +1,51 @@
+{
+  "route_id": "shard-exec-001",
+  "aggregation_strategy": "local_merge",
+  "residual_risk_notes": [
+    "synthetic shard execution example"
+  ],
+  "stop_on_block": true,
+  "aggregation_rules": {
+    "require_shard_metadata": true,
+    "require_distinct_providers": false,
+    "strategy": "collect_outputs",
+    "expected_groups": [
+      {
+        "group_id": "claims",
+        "min_shards": 2,
+        "strategy": "collect_outputs"
+      }
+    ]
+  },
+  "stages": [
+    {
+      "stage_id": "stage-1",
+      "provider": "dry-run",
+      "task_profile": "contract_risk_review",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "shard_group": "claims",
+      "shard_id": "shard-a",
+      "external_view": {
+        "content_type": "json",
+        "payload": {
+          "company_name": "<ORG_abc123>",
+          "severity": "high"
+        }
+      }
+    },
+    {
+      "stage_id": "stage-2",
+      "provider": "dry-run",
+      "task_profile": "contract_risk_review",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "shard_group": "claims",
+      "shard_id": "shard-b",
+      "external_view": {
+        "content_type": "text",
+        "payload": "synthetic projected clause summary"
+      }
+    }
+  ]
+}

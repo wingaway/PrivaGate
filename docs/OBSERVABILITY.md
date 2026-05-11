@@ -1,11 +1,11 @@
 # Observability
 
-ProofGate uses structured tracing through `tracing` and `tower-http`.
+PrivaGate uses structured tracing through `tracing` and `tower-http`.
 
 Recommended runtime settings:
 
 ```bash
-export RUST_LOG=info,proofgate_gateway=debug,tower_http=info
+export RUST_LOG=info,privagate_gateway=debug,tower_http=info
 ```
 
 The sample OpenTelemetry Collector configuration is located at:

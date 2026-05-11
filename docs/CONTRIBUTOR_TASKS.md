@@ -1,6 +1,13 @@
 # Contributor Tasks
 
-This file lists contribution areas that are useful for ProofGate and small enough to be reviewed incrementally.
+This file lists contribution areas that are useful for PrivaGate and small enough to be reviewed incrementally.
+
+## Current Focus: 2.5 Route Planning and Splitting
+
+- Expand route-plan execution semantics without allowing raw input to cross the adapter boundary.
+- Expand shard-plan schemas for data splitting, local aggregation evidence, aggregation policy checks, group-specific local aggregation strategies, controlled promotion of local aggregation results into candidate follow-up views, explicit audit binding for promoted follow-up views, and task-profile-aware local utility gates for promoted follow-up views.
+- Add dry-run and future local-model coverage for staged execution and halt behavior.
+- Add tests proving route-plan or shard-plan execution stops when runtime adapter capability, task contract, manual review state, or aggregation rules are inconsistent.
 
 ## Good First Issues
 
@@ -31,6 +38,7 @@ Contribution expectation:
 - Location hierarchy generalization.
 - Numeric bucketing policies per task profile.
 - Suppression policies for high-risk rare attributes.
+- Local-only retention for fields that must never cross the trusted boundary.
 
 Contribution expectation:
 
@@ -57,7 +65,7 @@ Contribution expectation:
 - OpenAI-compatible external adapter.
 - Local Ollama adapter.
 - Local vLLM adapter.
-- Dry-run adapter that writes no secrets and returns request summaries.
+- Extend the dry-run adapter with richer synthetic response modes and fixture-driven tests.
 
 Contribution expectation:
 

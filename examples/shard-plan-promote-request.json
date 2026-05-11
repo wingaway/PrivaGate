@@ -1,0 +1,66 @@
+{
+  "route_id": "shard-promote-001",
+  "aggregation_strategy": "local_merge",
+  "residual_risk_notes": [
+    "synthetic local aggregation promotion example"
+  ],
+  "stop_on_block": true,
+  "aggregation_rules": {
+    "require_shard_metadata": true,
+    "require_distinct_providers": false,
+    "strategy": "json_object_by_shard",
+    "promotion": {
+      "mode": "external_view_candidate",
+      "candidate_task_profile": "follow_up_summary",
+      "utility_verification": {
+        "require_required_fields": true,
+        "verify_constraint_results": false
+      },
+      "allowed_content_types": [
+        "json"
+      ],
+      "max_object_keys": 4
+    },
+    "expected_groups": [
+      {
+        "group_id": "claims",
+        "min_shards": 2,
+        "strategy": "json_object_by_shard"
+      }
+    ]
+  },
+  "stages": [
+    {
+      "stage_id": "stage-1",
+      "provider": "dry-run",
+      "task_profile": "follow_up_summary",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "shard_group": "claims",
+      "shard_id": "alpha",
+      "external_view": {
+        "content_type": "json",
+        "payload": {
+          "company_name": "<ORG_abc123>",
+          "severity": "high"
+        }
+      }
+    },
+    {
+      "stage_id": "stage-2",
+      "provider": "dry-run",
+      "task_profile": "follow_up_summary",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "shard_group": "claims",
+      "shard_id": "beta",
+      "external_view": {
+        "content_type": "json",
+        "payload": {
+          "company_name": "<ORG_def456>",
+          "severity": "medium"
+        }
+      }
+    }
+  ]
+}

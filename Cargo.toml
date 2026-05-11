@@ -1,15 +1,15 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/proofgate-core",
-  "crates/proofgate-gateway",
+  "crates/privagate-core",
+  "crates/privagate-gateway",
 ]
 
 [workspace.package]
 edition = "2021"
 license = "Apache-2.0"
-description = "Verifiable redaction gateway for hybrid local LLM and external API deployment."
-keywords = ["llm", "privacy", "redaction", "tokenization", "gateway"]
+description = "Privacy protection and data desensitization gateway for AI and data-processing workflows."
+keywords = ["privacy", "data-protection", "tokenization", "auditability", "gateway"]
 categories = ["web-programming::http-server", "science"]
 
 [workspace.dependencies]

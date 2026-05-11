@@ -22,11 +22,11 @@ def default_gateway_env():
     env.setdefault("CARGO_TARGET_DIR", str(ROOT / "target"))
     if (ROOT / ".rustup-home" / "toolchains").exists():
         env.setdefault("RUSTUP_HOME", str(ROOT / ".rustup-home"))
-    env.setdefault("PROOFGATE_HMAC_KEY", "external-api-simulation-secret")
-    env.setdefault("PROOFGATE_POLICY_PATH", str(ROOT / "config" / "policy.sample.json"))
-    env.setdefault("PROOFGATE_MAPPING_LOG", str(ROOT / "data" / "external-api-simulation-mappings.jsonl"))
-    env.setdefault("PROOFGATE_AUDIT_LOG", str(ROOT / "data" / "external-api-simulation-audit.jsonl"))
-    for key in ["CARGO_HOME", "CARGO_TARGET_DIR", "PROOFGATE_MAPPING_LOG", "PROOFGATE_AUDIT_LOG"]:
+    env.setdefault("PRIVAGATE_HMAC_KEY", "external-api-simulation-secret")
+    env.setdefault("PRIVAGATE_POLICY_PATH", str(ROOT / "config" / "policy.sample.json"))
+    env.setdefault("PRIVAGATE_MAPPING_LOG", str(ROOT / "data" / "external-api-simulation-mappings.jsonl"))
+    env.setdefault("PRIVAGATE_AUDIT_LOG", str(ROOT / "data" / "external-api-simulation-audit.jsonl"))
+    for key in ["CARGO_HOME", "CARGO_TARGET_DIR", "PRIVAGATE_MAPPING_LOG", "PRIVAGATE_AUDIT_LOG"]:
         path = Path(env[key])
         directory = path if path.suffix == "" else path.parent
         directory.mkdir(parents=True, exist_ok=True)
@@ -98,7 +98,7 @@ def start_gateway_if_needed(gateway_url):
         return None
 
     env = default_gateway_env()
-    exe_name = "proofgate-gateway.exe" if os.name == "nt" else "proofgate-gateway"
+    exe_name = "privagate-gateway.exe" if os.name == "nt" else "privagate-gateway"
     exe = Path(env["CARGO_TARGET_DIR"]) / "debug" / exe_name
     if not exe.exists():
         if os.name == "nt" and (ROOT / "scripts" / "cargo.ps1").exists():
@@ -112,12 +112,12 @@ def start_gateway_if_needed(gateway_url):
                     str(ROOT / "scripts" / "cargo.ps1"),
                     "build",
                     "-p",
-                    "proofgate-gateway",
+                    "privagate-gateway",
                 ],
                 env=env,
             )
         elif shutil.which("cargo"):
-            run(["cargo", "build", "-p", "proofgate-gateway"], env=env)
+            run(["cargo", "build", "-p", "privagate-gateway"], env=env)
         else:
             raise RuntimeError("cargo is not installed or not on PATH")
 
@@ -130,7 +130,7 @@ def start_gateway_if_needed(gateway_url):
     )
     if not wait_gateway(gateway_url, timeout_seconds=30):
         process.terminate()
-        raise RuntimeError("proofgate-gateway did not become healthy")
+        raise RuntimeError("privagate-gateway did not become healthy")
     return process
 
 
@@ -140,8 +140,11 @@ def run(command, env=None):
         raise RuntimeError(f"command failed: {' '.join(command)}")
 
 
-def project(gateway_url, case_input):
-    return http_json("POST", gateway_url.rstrip() + "/v1/project", case_input)
+def project(gateway_url, case_input, task_profile=None):
+    payload = dict(case_input)
+    if task_profile:
+        payload["task_profile"] = task_profile
+    return http_json("POST", gateway_url.rstrip() + "/v1/project", payload)
 
 
 def approve_manual_review_if_needed(
@@ -229,10 +232,11 @@ def run_case(args, case):
         label=f"{case['case_id']} local_model",
     )
 
-    projection = project(args.gateway_url, case["input"])
+    projection = project(args.gateway_url, case["input"], case.get("task_profile"))
     audit_id = projection["audit_summary"]["audit_id"]
     external_view = projection["external_view"]
     manual_review = approve_manual_review_if_needed(args.gateway_url, projection)
+    task_contract_assessment = projection.get("task_contract_assessment", {})
 
     external_prompt = [
         {
@@ -299,6 +303,10 @@ def run_case(args, case):
         "gateway": {
             "privacy_passed": privacy_passed,
             "utility_constraints_passed": utility_constraints_passed,
+            "task_contract_dispatch_allowed": task_contract_assessment.get(
+                "dispatch_allowed", True
+            ),
+            "task_contract_issues": task_contract_assessment.get("issues", []),
             "output_inspection_passed": inspection["passed"],
             "unauthorized_sensitive_output_count": inspection[
                 "unauthorized_sensitive_output_count"
@@ -407,7 +415,7 @@ def write_markdown(path, report):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default=str(Path(__file__).with_name("dataset.json")))
-    parser.add_argument("--gateway-url", default=os.environ.get("PROOFGATE_URL", DEFAULT_GATEWAY))
+    parser.add_argument("--gateway-url", default=os.environ.get("PRIVAGATE_URL", DEFAULT_GATEWAY))
     parser.add_argument("--local-base-url", default=os.environ.get("LOCAL_MODEL_BASE_URL", ""))
     parser.add_argument("--local-api-key", default=os.environ.get("LOCAL_MODEL_API_KEY", ""))
     parser.add_argument("--local-model", default=os.environ.get("LOCAL_MODEL_NAME", ""))

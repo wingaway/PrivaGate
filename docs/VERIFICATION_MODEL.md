@@ -2,7 +2,7 @@
 
 ## Overview
 
-ProofGate verification is based on reproducible checks over explicit mechanisms and policies. Reports should be machine-readable and tied to stable input and output digests.
+PrivaGate verification is based on reproducible checks over explicit mechanisms and policies. Reports should be machine-readable and tied to stable input and output digests.
 
 ## Privacy Verification
 
@@ -51,7 +51,7 @@ Digest binding allows later replay and comparison without publishing raw data.
 
 ## Manual Review Gate
 
-When `PROOFGATE_REVIEW_MODE=manual`, a human approval is also bound to:
+When `PRIVAGATE_REVIEW_MODE=manual`, a human approval is also bound to:
 
 ```text
 review_binding = (audit_id, external_view_digest, status)

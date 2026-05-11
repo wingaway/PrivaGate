@@ -14,21 +14,28 @@
 - `regex` for deterministic detectors.
 - `uuid` for audit identifiers.
 - `chrono` for time handling.
-- `tokio-postgres` for optional PostgreSQL audit storage.
-- In-memory manual review records plus append-only audit events for the optional human approval gate.
+- JSONL-backed local mapping, audit, and manual-review evidence by default.
+- `tokio-postgres` for optional shared PostgreSQL manual-review storage.
 
 ## Project Layout
 
 ```text
-crates/proofgate-core/       privacy mechanisms and reports
-crates/proofgate-gateway/    HTTP gateway
+crates/privagate-core/       privacy mechanisms and reports
+crates/privagate-gateway/    HTTP gateway
 config/                      sample policy
-examples/                    request examples
+examples/                    projection, route-plan, and shard-plan requests
 tests/external_api_simulation/
 docs/                        project documentation
-deploy/                      Kubernetes and OpenTelemetry examples
+deploy/                      deploy/kubernetes and deploy/otel-collector samples
 scripts/                     development and simulation wrappers
 ```
+
+## Operational Characteristics
+
+- The gateway enforces the trust boundary through `external_view`-only dispatch contracts.
+- Manual review can be persisted locally through JSONL or shared across instances through PostgreSQL.
+- Route-plan and shard-plan execution reuse the same task-contract, review, and adapter-capability checks as direct model dispatch.
+- Promotion binding is a local-only workflow that creates a new follow-up `audit_id` after replay and utility verification.
 
 ## Runtime Preference
 

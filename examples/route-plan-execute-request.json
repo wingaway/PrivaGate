@@ -1,0 +1,37 @@
+{
+  "route_id": "route-exec-001",
+  "aggregation_strategy": "merge_stage_outputs",
+  "residual_risk_notes": [
+    "synthetic staged execution example"
+  ],
+  "stop_on_block": true,
+  "stages": [
+    {
+      "stage_id": "stage-1",
+      "provider": "dry-run",
+      "task_profile": "contract_risk_review",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "external_view": {
+        "content_type": "json",
+        "payload": {
+          "company_name": "<ORG_abc123>",
+          "contract_id": "<CONTRACT_def456>",
+          "contract_amount_bucket": "500k_to_1m",
+          "severity": "high"
+        }
+      }
+    },
+    {
+      "stage_id": "stage-2",
+      "provider": "dry-run",
+      "task_profile": "contract_risk_review",
+      "adapter_class": "local_private",
+      "audit_id": "00000000-0000-0000-0000-000000000000",
+      "external_view": {
+        "content_type": "text",
+        "payload": "synthetic projected clause summary"
+      }
+    }
+  ]
+}

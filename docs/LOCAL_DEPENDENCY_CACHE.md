@@ -1,6 +1,6 @@
 # Local Dependency Cache
 
-ProofGate keeps local development artifacts inside the repository directory to avoid uncontrolled writes to user-level locations.
+PrivaGate keeps local development artifacts inside the repository directory to avoid uncontrolled writes to user-level locations.
 
 Ignored local directories:
 
@@ -10,6 +10,6 @@ Ignored local directories:
 - `.cache/`
 - `data/`
 
-The scripts `scripts/dev-env.sh` and `scripts/dev-env.ps1` set Cargo and ProofGate paths for local development.
+The scripts `scripts/dev-env.sh` and `scripts/dev-env.ps1` set Cargo and PrivaGate paths for local development.
 
 These directories are local-only and must not be committed.

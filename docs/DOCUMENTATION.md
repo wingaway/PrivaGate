@@ -2,6 +2,13 @@
 
 This repository uses English-only documentation. Keep documents concise, reproducible, and explicit about assumptions.
 
+## Recommended Reading Order
+
+1. Start with [WHITEPAPER.md](WHITEPAPER.md) for the goal hierarchy and trust-boundary model.
+2. Continue with [ARCHITECTURE.md](ARCHITECTURE.md), [THREAT_MODEL.md](THREAT_MODEL.md), and [VERIFICATION_MODEL.md](VERIFICATION_MODEL.md).
+3. Use [API.md](API.md), [COMMANDS.md](COMMANDS.md), and [TEST_PLAN.md](TEST_PLAN.md) when changing behavior.
+4. Use [ROADMAP.md](ROADMAP.md) to understand what is already implemented versus what is next.
+
 ## Research and Boundaries
 
 | Document | Purpose |
@@ -19,7 +26,7 @@ This repository uses English-only documentation. Keep documents concise, reprodu
 | [API.md](API.md) | HTTP endpoints and request/response examples |
 | [TECH_STACK.md](TECH_STACK.md) | Implementation stack and runtime assumptions |
 | [MODEL_ADAPTERS.md](MODEL_ADAPTERS.md) | External model adapter boundary |
-| [ROADMAP.md](ROADMAP.md) | Current capabilities, non-goals, and future work |
+| [ROADMAP.md](ROADMAP.md) | Implemented 2.x slices, next delivery track, research extensions, and non-goals |
 
 ## Operation
 
@@ -45,6 +52,7 @@ This repository uses English-only documentation. Keep documents concise, reprodu
 
 ## Maintenance Rules
 
+- When project goals or terminology change, update [README.md](../README.md), [WHITEPAPER.md](WHITEPAPER.md), and [ROADMAP.md](ROADMAP.md) together first.
 - API changes must update [API.md](API.md) and [TEST_PLAN.md](TEST_PLAN.md).
 - Policy or mechanism changes must update [TECH_STACK.md](TECH_STACK.md), [VERIFICATION_MODEL.md](VERIFICATION_MODEL.md), and sample policy files.
 - Deployment variable changes must update [COMMANDS.md](COMMANDS.md), [DEPLOYMENT.md](DEPLOYMENT.md), `.env.example`, and `docker-compose.yml`.

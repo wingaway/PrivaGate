@@ -39,8 +39,8 @@ body:
     attributes:
       label: Area
       options:
-        - proofgate-core
-        - proofgate-gateway
+        - privagate-core
+        - privagate-gateway
         - policy
         - detector
         - verification

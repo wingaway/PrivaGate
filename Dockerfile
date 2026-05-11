@@ -3,12 +3,12 @@ WORKDIR /workspace
 ENV CARGO_HOME=/workspace/.cargo-home
 ENV CARGO_TARGET_DIR=/workspace/target
 COPY . .
-RUN cargo build --release --bin proofgate-gateway
+RUN cargo build --release --bin privagate-gateway
 
 FROM debian:bookworm-slim
 WORKDIR /app
-COPY --from=builder /workspace/target/release/proofgate-gateway /usr/local/bin/proofgate-gateway
+COPY --from=builder /workspace/target/release/privagate-gateway /usr/local/bin/privagate-gateway
 COPY config /app/config
 EXPOSE 8080
-ENTRYPOINT ["proofgate-gateway"]
+ENTRYPOINT ["privagate-gateway"]
 

@@ -21,7 +21,7 @@ The default attacker can observe data sent to external LLM APIs and may use publ
 
 Trusted components:
 
-- ProofGate gateway process;
+- PrivaGate gateway process;
 - policy engine;
 - local detectors and optional local auxiliary model;
 - local key storage;
@@ -57,6 +57,6 @@ Untrusted or less-trusted components:
 
 ## Required Assumption
 
-ProofGate's privacy claims apply only when raw data, keys, mapping logs, and restoration remain inside the local trust boundary.
+PrivaGate's privacy claims apply only when raw data, keys, mapping logs, and restoration remain inside the local trust boundary.
 
-Manual review claims apply only when external dispatch goes through ProofGate's model adapter boundary or an equivalent integration that checks the approved `audit_id` and `external_view_digest`.
+Manual review claims apply only when external dispatch goes through PrivaGate's model adapter boundary or an equivalent integration that checks the approved `audit_id` and `external_view_digest`.

@@ -6,8 +6,8 @@ Linux:
 
 ```bash
 source ./scripts/dev-env.sh
-export PROOFGATE_HMAC_KEY="replace-with-deployment-secret"
-export PROOFGATE_REVIEW_MODE="manual"
+export PRIVAGATE_HMAC_KEY="replace-with-deployment-secret"
+export PRIVAGATE_REVIEW_MODE="manual"
 docker compose config
 docker compose up --build
 ```
@@ -16,8 +16,8 @@ Windows:
 
 ```powershell
 .\scripts\dev-env.ps1
-$env:PROOFGATE_HMAC_KEY="replace-with-deployment-secret"
-$env:PROOFGATE_REVIEW_MODE="manual"
+$env:PRIVAGATE_HMAC_KEY="replace-with-deployment-secret"
+$env:PRIVAGATE_REVIEW_MODE="manual"
 docker compose config
 docker compose up --build
 ```
@@ -27,7 +27,7 @@ docker compose up --build
 The sample manifest is located at:
 
 ```text
-deploy/kubernetes/proofgate-gateway.yaml
+deploy/kubernetes/privagate-gateway.yaml
 ```
 
 Before use, replace secrets, storage settings, image names, and ingress rules with environment-specific values.
@@ -39,7 +39,7 @@ Before use, replace secrets, storage settings, image names, and ingress rules wi
 - Local HMAC key.
 - Protected local mapping storage.
 - Append-only audit storage.
-- Optional manual review gate with `PROOFGATE_REVIEW_MODE=manual`.
+- Optional manual review gate with `PRIVAGATE_REVIEW_MODE=manual`.
 
 ## Deployment Rule
 

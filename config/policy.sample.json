@@ -1,7 +1,7 @@
 {
   "policy_version": "2026.05.03-production-sample",
   "task_profile": "contract_risk_review",
-  "key_domain": "local-kms/proofgate-gateway/hmac/v1",
+  "key_domain": "local-kms/privagate-gateway/hmac/v1",
   "fields": {
     "person_name": {
       "field_type": "person",
@@ -231,6 +231,12 @@
       "preserve_equality": true,
       "required_for_task": true
     },
+    "internal_case_notes": {
+      "field_type": "secret",
+      "mechanism": "local_only",
+      "preserve_equality": false,
+      "required_for_task": false
+    },
     "raw_secret": {
       "field_type": "secret",
       "mechanism": "suppress",
@@ -360,6 +366,46 @@
       "preserve_equality": false,
       "required_for_task": false,
       "address_level": "city"
+    }
+  },
+  "task_contracts": {
+    "contract_risk_review": {
+      "required_fields": [
+        "company_name",
+        "contract_id",
+        "contract_amount_bucket",
+        "severity"
+      ],
+      "allowed_adapter_classes": [
+        "local_private",
+        "reserved",
+        "external_standard",
+        "external_zero_retention"
+      ],
+      "promotion_utility": {
+        "require_required_fields": true
+      }
+    },
+    "internal_case_note_triage": {
+      "required_fields": [
+        "severity",
+        "internal_case_notes"
+      ],
+      "allowed_adapter_classes": [
+        "local_private"
+      ]
+    },
+    "follow_up_summary": {
+      "required_fields": [],
+      "allowed_adapter_classes": [
+        "local_private",
+        "reserved",
+        "external_standard",
+        "external_zero_retention"
+      ],
+      "promotion_utility": {
+        "require_required_fields": false
+      }
     }
   },
   "constraints": {

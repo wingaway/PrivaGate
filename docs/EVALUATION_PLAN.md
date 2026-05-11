@@ -2,7 +2,7 @@
 
 ## Goals
 
-Evaluation should measure both privacy effectiveness and task utility. A run is useful only when it records the policy, inputs, external-visible view, reports, and reproducible commands.
+Evaluation should measure privacy protection first and task utility second. A run is useful only when it records the policy, inputs, `external_view`, reports, and reproducible commands.
 
 ## Data
 
@@ -24,9 +24,10 @@ Required coverage:
 - Raw-value residue in external model output.
 - Token mapping isolation.
 - Output inspection pass rate.
+- Tool input and output leakage findings.
 - Differential-privacy budget and error bounds.
 - Known residual leakage such as equality and frequency leakage.
-- Manual review gate pass/block behavior when enabled.
+- Manual review gate pass and block behavior when enabled.
 
 ## Utility Metrics
 
@@ -47,7 +48,7 @@ Complex datasets must verify:
 - preserved event order;
 - bounded numeric transformations;
 - no raw identifiers in derived fields;
-- no prompt or tool output bypass.
+- no prompt or tool output bypass;
 - manual approval must be bound to the same `audit_id` and `external_view_digest` that reaches dispatch.
 
 ## Quality Gates

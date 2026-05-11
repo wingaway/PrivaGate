@@ -101,7 +101,7 @@ def write_markdown(path, result):
     lines = [
         f"# Complex Text Task Report: {CASE_ID}",
         "",
-        "> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, medical facts, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating ProofGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.",
+        "> Public test-data notice: this report was generated from synthetic and simulated test data only. Names, organizations, identifiers, accounts, addresses, medical facts, original inputs, projected views, model I/O, and restored fields in this file are artificial fixtures for evaluating PrivaGate. They must not be interpreted as real personal, customer, patient, operational, or business data. The external API was used only as an OpenAI-compatible test endpoint, and no API keys or Authorization headers are recorded here.",
         "",
         "## Test Task",
         "",
@@ -138,7 +138,7 @@ def write_markdown(path, result):
     lines.extend(
         [
             "",
-            "## ProofGate Projection",
+            "## PrivaGate Projection",
             "",
             f"- Audit ID: `{result['audit_id']}`",
             f"- Input digest: `{result['input_digest']}`",
@@ -200,7 +200,7 @@ def write_markdown(path, result):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gateway-url", default=os.environ.get("PROOFGATE_URL", DEFAULT_GATEWAY))
+    parser.add_argument("--gateway-url", default=os.environ.get("PRIVAGATE_URL", DEFAULT_GATEWAY))
     parser.add_argument("--external-base-url", default=os.environ.get("EXTERNAL_MODEL_BASE_URL", ""))
     parser.add_argument("--external-api-key", default=os.environ.get("EXTERNAL_MODEL_API_KEY", ""))
     parser.add_argument("--external-model", default=os.environ.get("EXTERNAL_MODEL_NAME", ""))
@@ -242,7 +242,7 @@ def main():
 
         system_prompt = (
             "You are a healthcare claim appeal reviewer. You will receive only a "
-            "ProofGate external_view. Produce a professional claim-review memo. "
+            "PrivaGate external_view. Produce a professional claim-review memo. "
             "Preserve clinical context, administrative context, denial rationale, "
             "evidence conflict, claim amount bucket, and recommended next actions. "
             "Do not infer, reconstruct, or restore tokenized, generalized, or suppressed "

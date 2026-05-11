@@ -1,6 +1,6 @@
 # Contributing
 
-ProofGate is a research-oriented engineering project for verifiable redaction in hybrid LLM deployments. Contributions should keep the system auditable, reproducible, and explicit about privacy-utility trade-offs.
+PrivaGate is a research-oriented engineering project for privacy protection and data desensitization in AI and data-processing workflows. Contributions should keep the system auditable, reproducible, and explicit about privacy-utility trade-offs.
 
 Before opening a pull request:
 
